@@ -1,5 +1,8 @@
 package com.project;
 
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.control.TextField;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.text.Text;
@@ -36,5 +39,24 @@ public class Controller implements Initializable {
     private static final String TEXT_MODEL   = "gemma3:1b";
     private static final String VISION_MODEL = "llava-phi3";
 
-    
+    @FXML
+    private Button uploadButton, sendButton;
+
+    @FXML
+    private Text textInfo;
+
+    @FXML
+    private ImageView uploadImage, sendImage; 
+
+    @FXML
+    private TextField messageText;
+
+    //Funció initalizable per afegir imatges als botons
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        Image img = new Image(getClass().getResourceAsStream("/icons/upload.jpg"));
+        uploadImage.setImage(img);
+        Image img_character = new Image(getClass().getResourceAsStream("/icons/send.jpg"));
+        sendImage.setImage(img_character);
+    }
 }
