@@ -24,7 +24,7 @@
                   </Text>
                </content>
             </ScrollPane>
-            <ToolBar prefHeight="53.0" prefWidth="495.0">
+            <ToolBar prefHeight="53.0" prefWidth="495.0" style="-fx-background-color: black;">
               <items>
                 <Button fx:id="uploadButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" style="-fx-background-color: white;">
                      <graphic>
