@@ -1,0 +1,86 @@
+[ 
+    { 
+      "name": "Beavis", 
+      "image": "beavis.gif", 
+      "color": "yellow", 
+      "series": "Beavis and Butthead" },
+    
+    { 
+      "name": "Butthead",
+      "image": "butthead.jpg",
+      "color": "brown", 
+      "series": "Beavis and Butthead" }, 
+    
+    { 
+      "name": "Gumball", 
+      "image": "gumball.jpg", 
+      "color": "blue", 
+      "series": "The Amazing World of Gumball" }, 
+    
+    { 
+      "name": "Darwin", 
+      "image": "darwin.gif", 
+      "color": "orange", 
+      "series": "The Amazing World of Gumball" }, 
+    
+    { 
+      "name": "Doraemon", 
+      "image": "doraemon.jpg", 
+      "color": "blue", 
+      "series": "Doraemon" }, 
+    
+    { 
+      "name": "Nobita Nobi", 
+      "image": "nobita.jpg", 
+      "color": "yellow", 
+      "series": "Doraemon" }, 
+    
+    { 
+      "name": "Finn the Human", 
+      "image": "finn.jpg", 
+      "color": "blue", 
+      "series": "Adventure Time" }, 
+    
+    { 
+      "name": "Jake the Dog", 
+      "image": "jake-the-dog.jpg", 
+      "color": "yellow", 
+      "series": "Adventure Time" }, 
+      
+    { 
+      "name": "Shin Chan", 
+      "image": "shin-chan.gif", 
+      "color": "black", 
+      "series": "Shin-chan" }, 
+      
+    { 
+      "name": "Tintin", 
+      "image": "tintin.jpg", 
+      "color": "yellow", 
+      "series": "The Adventures of Tintin" }, 
+
+    { 
+      "name": "Milu", 
+      "image": "milu.jpg", 
+      "color": "white", 
+      "series": "The Adventures of Tintin" },
+      
+    { 
+      "name": "Inspector Gadget", 
+      "image": "inspector-gadget.jpg", 
+      "color": "brown", 
+      "series": "Inspector Gadget" }, 
+      
+    { 
+      "name": "Homer Simpson", 
+      "image": "homer.gif", 
+      "color": "yellow", 
+      "series": "The Simpsons" 
+    },
+    { 
+      "name": "Pink Panther", 
+      "image": "pantera-rosa.jpg", 
+      "color": "pink", 
+      "series": "The Pink Panther" 
+    }
+]
