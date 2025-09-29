@@ -1,6 +1,6 @@
-com\nintendoDB\ControllerCharacters.class
-com\nintendoDB\ControllerCharacter.class
-com\nintendoDB\Main.class
-com\nintendoDB\ControllerItem1.class
-com\nintendoDB\ControllerMain.class
-com\utils\UtilsViews.class
+com/utils/UtilsViews.class
+com/nintendoDB/ControllerItem1.class
+com/nintendoDB/ControllerCharacters.class
+com/nintendoDB/ControllerMain.class
+com/nintendoDB/ControllerCharacter.class
+com/nintendoDB/Main.class
