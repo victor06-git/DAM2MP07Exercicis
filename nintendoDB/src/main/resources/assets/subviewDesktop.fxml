@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane nodeOrientation="RIGHT_TO_LEFT" onMouseClicked="#toViewCharacter" prefHeight="65.0" prefWidth="208.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nintendoDB.ControllerItemDesktop">
+   <children>
+      <!-- Imagen reducida y reubicada -->
+      <ImageView fx:id="image" fitHeight="40.0" fitWidth="60.0" layoutX="116.0" layoutY="10.0" pickOnBounds="true" preserveRatio="true" />
+
+      <!-- Título más corto -->
+      <Label fx:id="title" layoutX="10.0" layoutY="5.0" prefHeight="20.0" prefWidth="120.0" text="TitleText">
+         <font>
+            <Font size="14.0" />
+         </font>
+      </Label>
+
+      <!-- Subtítulo más corto -->
+      <Label fx:id="subtitle" layoutX="10.0" layoutY="30.0" prefHeight="18.0" prefWidth="120.0" text="Subtitle Text">
+         <font>
+            <Font size="11.0" />
+         </font>
+      </Label>
+
+      <!-- Círculo pequeño, reposicionado -->
+      <Circle fx:id="circle" fill="#1fff42" layoutX="185.0" layoutY="30.0" radius="8.0" stroke="BLACK" strokeType="INSIDE" />
+
+      <!-- Línea separadora -->
+      <Pane layoutX="5.0" layoutY="60.0" prefHeight="2.0" prefWidth="190.0" style="-fx-background-color: #000000;" />
+   </children>
+</AnchorPane>

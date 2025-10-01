@@ -73,10 +73,6 @@ public class ControllerCharacters implements Initializable {
 
                 // Afegir el nou element a l'espai que l'hi hem reservat (itemBox)
                 list.getChildren().add(itemPane);
-
-                // Label label = new Label(name);
-                // label.setStyle("-fx-border-color: green;");
-                // list.getChildren().add(label);
             }
         } catch (Exception e) {
             System.err.println("Error al cargar la lista de personajes");
