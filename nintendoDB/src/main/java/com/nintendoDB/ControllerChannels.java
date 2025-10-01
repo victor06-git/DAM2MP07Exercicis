@@ -67,9 +67,8 @@ public class ControllerChannels implements Initializable {
 
                 itemController.setCircleColor(color);
                 itemController.setImage(pathImages + image);
-                itemController.setTitle(name);
-                itemController.setSubtitle(description);
-                
+                itemController.setTitle(name);        
+                itemController.setDescription(description);        
 
                 // Afegir el nou element a l'espai que l'hi hem reservat (itemBox)
                 list.getChildren().add(itemPane);

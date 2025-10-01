@@ -54,6 +54,54 @@
                               <Cursor fx:constant="HAND" />
                            </cursor>
                         </AnchorPane>
+                        <AnchorPane maxHeight="50.0" onMouseClicked="#toViewSeries" style="-fx-background-color: white; -fx-border-style: solid; -fx-border-width: 0 0 1 0; -fx-border-color: grey;">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: yellow;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <children>
+                                    <Label maxHeight="50.0" text="Series TV">
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
+                                       <HBox.margin>
+                                          <Insets left="15.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                    <ImageView fx:id="seriesImage" fitHeight="75.0" fitWidth="87.0" pickOnBounds="true" preserveRatio="true">
+                                       <HBox.margin>
+                                          <Insets left="130.0" />
+                                       </HBox.margin>
+                                    </ImageView>
+                                 </children>
+                              </HBox>
+                           </children>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </AnchorPane>
+                        <AnchorPane maxHeight="50.0" onMouseClicked="#toViewChannels" style="-fx-background-color: white; -fx-border-style: solid; -fx-border-width: 0 0 1 0; -fx-border-color: grey;">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: orange;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <children>
+                                    <Label maxHeight="50.0" text="Canals TV">
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font>
+                                       <HBox.margin>
+                                          <Insets left="15.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                    <ImageView fx:id="channelImage" fitHeight="75.0" fitWidth="87.0" pickOnBounds="true" preserveRatio="true">
+                                       <HBox.margin>
+                                          <Insets left="130.0" />
+                                       </HBox.margin>
+                                    </ImageView>
+                                 </children>
+                              </HBox>
+                           </children>
+                           <cursor>
+                              <Cursor fx:constant="HAND" />
+                           </cursor>
+                        </AnchorPane>
                         <ImageView fx:id="image" fitHeight="218.0" fitWidth="329.0" pickOnBounds="true" preserveRatio="true" translateY="10.0" />
                      </children>
                   </VBox>

@@ -23,6 +23,12 @@ public class ControllerItem2 {
     @FXML
     private Circle circle;
 
+    private String description;
+
+    public void setDescription(String description){
+        this.description = description;
+    }
+
     public void setTitle(String title) {
         this.title.setText(title);
     }
@@ -46,6 +52,7 @@ public class ControllerItem2 {
         crtl.setNom(title.getText());
         crtl.setCircle(circle.getStyle());
         crtl.setImage(image.getImage());
+        crtl.setDescription(description);
         UtilsViews.setViewAnimating("ViewSerie");
     }
 }

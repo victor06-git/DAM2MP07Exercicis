@@ -1,9 +1,15 @@
+com/nintendoDB/ControllerSerie.class
 com/nintendoDB/Main$1.class
+com/nintendoDB/ControllerChannels.class
 com/nintendoDB/ControllerItem1.class
+com/nintendoDB/ControllerItem3.class
 com/nintendoDB/ControllerCharacters.class
 com/nintendoDB/Main.class
 com/nintendoDB/ControllerItemDesktop.class
+com/nintendoDB/ControllerSeries.class
 com/utils/UtilsViews.class
 com/nintendoDB/ControllerMain.class
 com/nintendoDB/ControllerCharacter.class
 com/nintendoDB/ControllerDesktop.class
+com/nintendoDB/ControllerChannel.class
+com/nintendoDB/ControllerItem2.class

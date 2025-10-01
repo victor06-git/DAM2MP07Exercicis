@@ -44,7 +44,7 @@ public class ControllerSeries implements Initializable {
 
     public void loadList() {
         try {
-            URL jsonFileURL = getClass().getResource("/assets/data/characters.json");
+            URL jsonFileURL = getClass().getResource("/assets/data/series.json");
             Path path = Paths.get(jsonFileURL.toURI());
             String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
             JSONArray jsonInfo = new JSONArray(content);
@@ -63,13 +63,12 @@ public class ControllerSeries implements Initializable {
                 URL resource = this.getClass().getResource("/assets/subviewSeries.fxml");
                 FXMLLoader loader = new FXMLLoader(resource);
                 Parent itemPane = loader.load();
-                ControllerItem1 itemController = loader.getController();
+                ControllerItem2 itemController = loader.getController();
 
                 itemController.setCircleColor(color);
                 itemController.setImage(pathImages + image);
-                itemController.setTitle(name);
-                itemController.setSubtitle(description);
-                
+                itemController.setTitle(name);       
+                itemController.setDescription(description);         
 
                 // Afegir el nou element a l'espai que l'hi hem reservat (itemBox)
                 list.getChildren().add(itemPane);

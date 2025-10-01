@@ -1,6 +1,6 @@
 package com.nintendoDB;
 
-import com.utils.*;
+import com.utils.UtilsViews;
 
 import javafx.fxml.FXML;
 import javafx.scene.image.Image;
@@ -13,7 +13,7 @@ public class ControllerMain {
     private ImageView image;
 
     @FXML
-    private ImageView characterImage;
+    private ImageView characterImage, seriesImage, channelImage;
 
 
     @FXML
@@ -22,15 +22,32 @@ public class ControllerMain {
         image.setImage(img);
         Image img_character = new Image(getClass().getResourceAsStream("/icons/scooby.gif"));
         characterImage.setImage(img_character);
+        Image img_serie = new Image(getClass().getResourceAsStream("/icons/picapiedra.gif"));
+        seriesImage.setImage(img_serie);
+        Image img_channel = new Image(getClass().getResourceAsStream("/icons/simpson.gif"));
+        channelImage.setImage(img_channel);
         
     }
 
     @FXML
     private void toViewCharacters(MouseEvent event) {
-        System.out.println("To View Characters");
         ControllerCharacters ctrlCharacters = (ControllerCharacters) UtilsViews.getController("ViewCharacters");
         ctrlCharacters.loadList();
         UtilsViews.setViewAnimating("ViewCharacters");
+    }
+
+    @FXML
+    private void toViewSeries(MouseEvent event) {
+        ControllerSeries ctrlSeries = (ControllerSeries) UtilsViews.getController("ViewSeries");
+        ctrlSeries.loadList();
+        UtilsViews.setViewAnimating("ViewSeries");
+    }
+
+    @FXML
+    private void toViewChannels(MouseEvent event) {
+        ControllerChannels ctrlChannels = (ControllerChannels) UtilsViews.getController("ViewChannels");
+        ctrlChannels.loadList();
+        UtilsViews.setViewAnimating("ViewChannels");
     }
 
 }
