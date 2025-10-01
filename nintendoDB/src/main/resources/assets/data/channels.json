@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Clan",
+    "image": "clan.jpg",
+    "color": "red",
+    "description": "Canal infantil de RTVE con series de animación y programas educativos"
+  },
+  {
+    "name": "Disney Channel",
+    "image": "disney-channel.jpg",
+    "color": "blue",
+    "description": "Canal dedicado a contenido Disney con series animadas y de acción real"
+  },
+  {
+    "name": "Cartoon Network",
+    "image": "cartoon-network.gif",
+    "color": "black",
+    "description": "Canal especializado en animación con clásicos y series modernas"
+  },
+  {
+    "name": "Nickelodeon",
+    "image": "nickelodeon.jpg",
+    "color": "orange",
+    "description": "Canal juvenil con comedias animadas y programas de entretenimiento"
+  },
+  {
+    "name": "Boing",
+    "image": "boing.jpg",
+    "color": "blue",
+    "description": "Canal infantil español con dibujos animados y series de acción"
+  },
+  {
+    "name": "Disney XD",
+    "image": "disney-xd.jpg",
+    "color": "black",
+    "description": "Canal orientado a público más mayor con aventuras y acción"
+  }
+]

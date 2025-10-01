@@ -82,6 +82,6 @@ public class ControllerCharacters implements Initializable {
 
     @FXML
     private void toViewMain(MouseEvent event) {
-        UtilsViews.setViewAnimating("ViewMain");
+        UtilsViews.setViewAnimating("Mobile");
     }
 }

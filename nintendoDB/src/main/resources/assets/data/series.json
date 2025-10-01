@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Beavis and Butthead",
+    "image": "beavis-and-butthead.jpg",
+    "color": "yellow",
+    "description": "Dos adolescentes problemáticos viven aventuras absurdas y comentan videos musicales"
+  },
+  {
+    "name": "The Amazing World of Gumball",
+    "image": "gumball-serie.gif",
+    "color": "blue",
+    "description": "Un gato azul y su hermano pez dorado viven situaciones surrealistas en la ciudad de Elmore"
+  },
+  {
+    "name": "Doraemon",
+    "image": "doraemon-serie.jpg",
+    "color": "blue",
+    "description": "Un gato robot del futuro ayuda a un niño con inventos mágicos de su bolsillo dimensional"
+  },
+  {
+    "name": "Adventure Time",
+    "image": "adventure-time.jpg",
+    "color": "white",
+    "description": "Un chico humano y su perro mágico viven épicas aventuras en la Tierra de Ooo"
+  },
+  {
+    "name": "Shin-chan",
+    "image": "shin-chan-serie.gif",
+    "color": "red",
+    "description": "Un niño travieso de 5 años y su peculiar familia en situaciones cómicas cotidianas"
+  },
+  {
+    "name": "The Adventures of Tintin",
+    "image": "tintin-adventures.jpg",
+    "color": "yellow",
+    "description": "Un joven reportero y su perro resuelven misterios alrededor del mundo"
+  },
+  {
+    "name": "Inspector Gadget",
+    "image": "inspector-gadget-serie.jpg",
+    "color": "gray",
+    "description": "Un detective cyborg torpe lucha contra el crimen con gadgets incorporados en su cuerpo"
+  },
+  {
+    "name": "The Simpsons",
+    "image": "simpsons.gif",
+    "color": "yellow",
+    "description": "Una familia disfuncional amarilla satiriza la sociedad americana en Springfield"
+  },
+  {
+    "name": "The Pink Panther",
+    "image": "pink-panther.jpg",
+    "color": "pink",
+    "description": "Una pantera rosa elegante vive aventuras mudas llenas de humor visual"
+  }
+]

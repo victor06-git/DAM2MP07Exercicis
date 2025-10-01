@@ -1,9 +1,9 @@
-com/nintendoDB/ControllerItemDesktop.class
-com/utils/UtilsViews.class
 com/nintendoDB/Main$1.class
 com/nintendoDB/ControllerItem1.class
 com/nintendoDB/ControllerCharacters.class
+com/nintendoDB/Main.class
+com/nintendoDB/ControllerItemDesktop.class
+com/utils/UtilsViews.class
 com/nintendoDB/ControllerMain.class
 com/nintendoDB/ControllerCharacter.class
-com/nintendoDB/Main.class
 com/nintendoDB/ControllerDesktop.class

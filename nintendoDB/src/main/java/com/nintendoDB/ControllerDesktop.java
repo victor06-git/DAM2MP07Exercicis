@@ -73,6 +73,7 @@ public class ControllerDesktop implements Initializable {
         // Al cambiar la opción, recarga la lista
         choiceTitle.setOnAction((event) -> {
             String selected = choiceTitle.getValue();
+            Main.tema.equals(selected); // <-- aquí se establece el tema
             labelNom.setText(selected);
             loadList(selected); // <-- aquí se carga dinámicamente
         });
@@ -108,7 +109,17 @@ public class ControllerDesktop implements Initializable {
             String name = item.optString("name", "Sense nom");
             String image = item.optString("image", "default.png");
             String color = item.optString("color", "#000000");
-            String series = item.optString("series", "");
+            
+            String subtitle_str = "";
+
+            if (jsonFile.equals("/assets/data/characters.json")) {
+                subtitle_str = item.optString("series", "");
+            } else if (jsonFile.equals("/assets/data/channels.json")) {
+                subtitle_str = item.optString("description", "");
+            } else {
+                subtitle_str = item.optString("description", "");
+            }
+            
 
             // Subview que puede ser común o diferente por categoría
             URL resource = this.getClass().getResource("/assets/subviewDesktop.fxml");
@@ -116,11 +127,17 @@ public class ControllerDesktop implements Initializable {
             Parent itemPane = loader.load();
             ControllerItemDesktop itemController = loader.getController();
 
-            //itemController.setCircleColor(color);
             itemController.setImage(pathImages + image);
             itemController.setTitle(name);
-            itemController.setSubtitle(series);
             itemController.setCircleColor(color);
+
+            if (jsonFile.equals("/assets/data/characters.json")) {
+                itemController.setSubtitle(subtitle_str);
+            } else if (jsonFile.equals("/assets/data/channels.json")) {
+                itemController.setSubtitle(subtitle_str);
+            } else {
+                itemController.setSubtitle(subtitle_str);
+            }
 
             list.getChildren().add(itemPane);
         }
