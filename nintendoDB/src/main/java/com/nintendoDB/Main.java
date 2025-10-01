@@ -1,5 +1,5 @@
 package com.nintendoDB;
-import com.utils.*;
+import com.utils.UtilsViews;
 
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -31,6 +31,10 @@ public class Main extends Application {
         UtilsViews.addView(getClass(), "ViewCharacters", "/assets/viewCharacters.fxml");
         UtilsViews.addView(getClass(), "ViewCharacter", "/assets/viewCharacter.fxml");
         UtilsViews.addView(getClass(), "Desktop", "/assets/viewDesktop.fxml");
+        UtilsViews.addView(getClass(), "ViewSeries", "/assets/viewSeries.fxml");
+        UtilsViews.addView(getClass(), "ViewSerie", "/assets/viewSerie.fxml");
+        UtilsViews.addView(getClass(), "ViewChannels", "/assets/viewChannels.fxml");
+        UtilsViews.addView(getClass(), "ViewChannel", "/assets/viewChannel.fxml");
 
         Scene scene = new Scene(UtilsViews.parentContainer);
         

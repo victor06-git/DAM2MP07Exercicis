@@ -27,7 +27,7 @@ public class ControllerDesktop implements Initializable {
 
     @FXML
     private ChoiceBox<String> choiceTitle;
-    String seriesDB[] = { "Personatges", "Canals TV", "Series TV" };
+    String seriesDB[] = { "Personatges", "Series TV", "Canals TV" };
 
 
     @FXML
@@ -79,8 +79,6 @@ public class ControllerDesktop implements Initializable {
         });
     }
 
-    
-
     public void loadList(String category) {
     try {
         // Selección del archivo JSON en base a la categoría
@@ -120,7 +118,6 @@ public class ControllerDesktop implements Initializable {
                 subtitle_str = item.optString("description", "");
             }
             
-
             // Subview que puede ser común o diferente por categoría
             URL resource = this.getClass().getResource("/assets/subviewDesktop.fxml");
             FXMLLoader loader = new FXMLLoader(resource);
@@ -130,14 +127,7 @@ public class ControllerDesktop implements Initializable {
             itemController.setImage(pathImages + image);
             itemController.setTitle(name);
             itemController.setCircleColor(color);
-
-            if (jsonFile.equals("/assets/data/characters.json")) {
-                itemController.setSubtitle(subtitle_str);
-            } else if (jsonFile.equals("/assets/data/channels.json")) {
-                itemController.setSubtitle(subtitle_str);
-            } else {
-                itemController.setSubtitle(subtitle_str);
-            }
+            itemController.setSubtitle(subtitle_str);
 
             list.getChildren().add(itemPane);
         }
