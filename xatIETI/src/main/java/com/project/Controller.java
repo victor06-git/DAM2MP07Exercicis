@@ -33,6 +33,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.TextFlow;
+import java.io.PrintStream;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -68,6 +69,7 @@ public class Controller implements Initializable {
     private String selectedImageBase64 = null;
     private String currentUserMessage = "";
     private Image aiIcon;
+    private Image userIcon;
 
     // Funció initializable per afegir imatges als botons
     @Override
@@ -77,16 +79,30 @@ public class Controller implements Initializable {
         Image img_character = new Image(getClass().getResourceAsStream("/icons/send.jpg"));
         sendImage.setImage(img_character);
 
-        //Carregar la imatge de Xat IETI
+        //Carregar la imatge de Xat IETI i User
         try{
             aiIcon = new Image(getClass().getResourceAsStream("/icons/ai_icon.png"));
         } catch (Exception e) {
             System.out.println("No s'ha pogut carregar la icona de la IA");
             aiIcon = null;
         }
+
+        try{
+            userIcon = new Image(getClass().getResourceAsStream("/icons/user_icon.png"));
+        } catch (Exception e) {
+            System.out.println("No s'ha pogut carregar la icona de User");
+            userIcon = null;
+        }
         
         // Configurar botó Send desactivat inicialment
         sendButton.setDisable(false);
+
+        
+        // Configurar listener per a la tecla ESC per cancel·lar peticions
+        messageText.setOnKeyPressed(event -> {
+            if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
+                cancelRequest();
+            }});
     }
 
     // --- UI Actions ---
@@ -298,15 +314,31 @@ public class Controller implements Initializable {
         Platform.runLater(() -> {
             textInfo.getChildren().clear();
 
+            // Crear icona de l'usuari
+            ImageView userIconView = null;
+            if (userIcon != null) {
+                userIconView = new ImageView(userIcon);
+                userIconView.setFitWidth(50);
+                userIconView.setFitHeight(50);
+                userIconView.setPreserveRatio(true);
+            }
+            
+            // Añadir espacio después de la imagen
+            Text spacing = new Text("  ");
+            
             // Títol "You" en negreta i més gran
             Text userTitle = new Text("You\n");
             userTitle.setFont(Font.font("System", FontWeight.BOLD, 18));
 
-            // Missatge de l'usuari
-            Text userMsg = new Text(message + "\n\n");
+            // Missatge de l'usuari indentado
+            Text userMsg = new Text("    " + message.replace("\n", "\n    ") + "\n\n");
             userMsg.setFont(Font.font("System", 14));
 
-            textInfo.getChildren().addAll(userTitle, userMsg);
+            if (userIconView != null) {
+                textInfo.getChildren().addAll(userIconView, spacing, userTitle, userMsg);
+            } else {
+                textInfo.getChildren().addAll(userTitle, userMsg);
+            }
         });
     }
 
@@ -316,17 +348,20 @@ public class Controller implements Initializable {
             ImageView aiIconView = null;
             if (aiIcon != null) {
                 aiIconView = new ImageView(aiIcon);
-                aiIconView.setFitWidth(100);
-                aiIconView.setFitHeight(100);
+                aiIconView.setFitWidth(50);
+                aiIconView.setFitHeight(50);
                 aiIconView.setPreserveRatio(true);
             }
+
+            Text spacing = new Text("  "); // Espacios para separar
             
             // Títol "Xat IETI" en negreta i més gran
             Text aiTitle = new Text(" Xat IETI\n");
             aiTitle.setFont(Font.font("System", FontWeight.BOLD, 18));
             
-            // Missatge de la IA
-            Text aiMsg = new Text(message);
+            // Missatge de la IA con indentación
+            String indentedMessage = message.isEmpty() ? "" : "    " + message.replace("\n", "\n    ");
+            Text aiMsg = new Text(indentedMessage);
             aiMsg.setFont(Font.font("System", 14));
             
             if (aiIconView != null) {
@@ -334,17 +369,19 @@ public class Controller implements Initializable {
             } else {
                 textInfo.getChildren().addAll(aiTitle, aiMsg);
             }
+
         });
     }
 
     private void updateAIMessage(String message) {
         Platform.runLater(() -> {
-            // Buscar l'últim Text que correspon al missatge de la IA
             int size = textInfo.getChildren().size();
             if (size > 0) {
                 // L'últim element hauria de ser el missatge de la IA
                 Text aiMsg = (Text) textInfo.getChildren().get(size - 1);
-                aiMsg.setText(message);
+                // Aplicar indentación a cada línea
+                String indentedMessage = "    " + message.replace("\n", "\n    ");
+                aiMsg.setText(indentedMessage);
             }
         });
     }
@@ -361,6 +398,50 @@ public class Controller implements Initializable {
 
 
     // --- Utility Methods ---
+
+    // Mètode per cancel·lar la petició actual amb la tecla ESC
+    private void cancelRequest() {
+        if (isCancelled.get()) {
+            return; // Ja està cancel·lat
+        }
+
+        isCancelled.set(true);
+
+        // Cancel·lar petició de streaming
+        if (streamRequest != null && !streamRequest.isDone()) {
+            streamRequest.cancel(true);
+        }
+
+        // Cancel·lar petició completa
+        if (completeRequest != null && !completeRequest.isDone()) {
+            completeRequest.cancel(true);
+        }
+
+        // Tancar l'stream actual
+        if (currentInputStream != null) {
+            try {
+                currentInputStream.close();
+            } catch (Exception ignore) {}
+        }
+
+        // Cancel·lar tasca de lectura
+        if (streamReadingTask != null && !streamReadingTask.isDone()) {
+            streamReadingTask.cancel(true);
+        }
+
+        Platform.runLater(() -> {
+            // Actualizar el último mensaje de la IA con "Cancelado"
+            int size = textInfo.getChildren().size();
+            if (size > 0) {
+                Object lastChild = textInfo.getChildren().get(size - 1);
+                if (lastChild instanceof Text) {
+                    Text aiMsg = (Text) lastChild;
+                    aiMsg.setText("    [Petició cancel·lada]");
+                }
+            }
+            resetButtons();
+        });
+    }
 
     private String tryParseAnyMessage(String bodyStr) {
         try {
