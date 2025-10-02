@@ -1,4 +1,4 @@
-package com.nintendoDB;
+package com.project;
 
 import java.util.Objects;
 
@@ -11,9 +11,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
 
-
-public class ControllerItem1 {
+public class ControllerItemDesktop {
     
+
     @FXML
     private Label title, subtitle;
 
@@ -46,11 +46,11 @@ public class ControllerItem1 {
     }
 
     public void toViewCharacter(MouseEvent event){
-        ControllerCharacter crtl = (ControllerCharacter) UtilsViews.getController("ViewCharacter");
+        ControllerDesktop crtl = (ControllerDesktop) UtilsViews.getController("Desktop");
         crtl.setNom(title.getText());
         crtl.setCircle(circle.getStyle());
-        crtl.setSeries(subtitle.getText());
+        crtl.setSubtitle(subtitle.getText());
         crtl.setImage(image.getImage());
-        UtilsViews.setViewAnimating("ViewCharacter");
     }
+
 }

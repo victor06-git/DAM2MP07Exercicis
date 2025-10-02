@@ -1,4 +1,4 @@
-package com.nintendoDB;
+package com.project;
 
 import java.net.URL;
 import java.nio.file.Path;
@@ -15,8 +15,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
 
-
-public class ControllerChannel implements Initializable {
+public class ControllerSerie implements Initializable {
     @FXML
     private Label nom;
 
@@ -60,7 +59,7 @@ public class ControllerChannel implements Initializable {
 
     @FXML
     private void toViewMain(MouseEvent event) {
-        UtilsViews.setViewAnimating("ViewChannels");
+        UtilsViews.setViewAnimating("ViewSeries");
     }
 
 

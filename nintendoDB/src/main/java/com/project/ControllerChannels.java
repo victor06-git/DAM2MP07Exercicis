@@ -1,4 +1,5 @@
-package com.nintendoDB;
+package com.project;
+import com.utils.UtilsViews;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -10,7 +11,7 @@ import java.util.ResourceBundle;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.utils.UtilsViews;
+
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

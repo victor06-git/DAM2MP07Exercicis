@@ -1,4 +1,4 @@
-package com.nintendoDB;
+package com.project;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;

@@ -1,4 +1,4 @@
-package com.nintendoDB;
+package com.project;
 
 import com.utils.*;
 

@@ -1,4 +1,4 @@
-package com.nintendoDB;
+package com.project;
 
 import java.util.Objects;
 
@@ -11,11 +11,11 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
 
-public class ControllerItemDesktop {
-    
 
+public class ControllerItem3 {
+    
     @FXML
-    private Label title, subtitle;
+    private Label title;
 
     @FXML
     private ImageView image;
@@ -23,12 +23,10 @@ public class ControllerItemDesktop {
     @FXML
     private Circle circle;
 
+    private String description;
+
     public void setTitle(String title) {
         this.title.setText(title);
-    }
-
-    public void setSubtitle(String subtitle) {
-        this.subtitle.setText(subtitle);
     }
 
     public void setImage(String imagePath) {
@@ -45,16 +43,16 @@ public class ControllerItemDesktop {
         circle.setStyle("-fx-fill: " + color);
     }
 
-    public void toViewCharacter(MouseEvent event){
-        ControllerDesktop crtl = (ControllerDesktop) UtilsViews.getController("Desktop");
-        crtl.setNom(title.getText());
-        crtl.setCircle(circle.getStyle());
-        crtl.setSubtitle(subtitle.getText());
-        crtl.setImage(image.getImage());
-
-        //Conseguir el id del item pulsado
-        Main.id = 1; //Valor para pasar la info entre vistas
-        Main.tema = ""; //Valor para pasar la info entre vistas
+    public void setDescription(String description){
+        this.description = description;
     }
 
+    public void toViewChannel(MouseEvent event){
+        ControllerChannel crtl = (ControllerChannel) UtilsViews.getController("ViewChannel");
+        crtl.setNom(title.getText());
+        crtl.setCircle(circle.getStyle());
+        crtl.setImage(image.getImage());
+        crtl.setDescription(description);
+        UtilsViews.setViewAnimating("ViewChannel");
+    }
 }

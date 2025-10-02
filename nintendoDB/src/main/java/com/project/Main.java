@@ -1,4 +1,4 @@
-package com.nintendoDB;
+package com.project;
 import com.utils.UtilsViews;
 
 import javafx.application.Application;
@@ -16,8 +16,10 @@ public class Main extends Application {
     final int WINDOW_WIDTH = 450;
     final int WINDOW_HEIGHT = 500;
 
-    static int id = 0; //Valor para pasar la info entre vistas
-    static String tema = "Personatges"; //Valor para pasar la info entre vistas
+    // static int id_item = 0; //Valor para pasar la info entre vistas
+    // static boolean selectedItem = false; //Valor si se ha seleccionado un elemento
+    // static boolean selectedTema = false; //Valor si se ha seleccionado un vbox de los jsons
+    // static String tema = ""; //Valor para pasar la info entre vistas
 
     public static void main(String[] args) {
         launch(args);
@@ -70,11 +72,10 @@ public class Main extends Application {
 
     private void _setLayout(int width) {
         if (width < 600) {
-            UtilsViews.setView("Mobile");
+            //Si se ha seleccionado algun item de los jsons            
+            UtilsViews.setView("Mobile"); //Predeterminado: Vista General
         } else {
             UtilsViews.setView("Desktop");
-            //ControllerDesktop crtl = (ControllerDesktop) UtilsViews.getController("Desktop");
-            //crtl.loadList("Personatges"); // o cualquier valor por defecto
         }
     }
 }

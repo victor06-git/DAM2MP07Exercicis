@@ -1,4 +1,4 @@
-package com.nintendoDB;
+package com.project;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -73,8 +73,14 @@ public class ControllerDesktop implements Initializable {
         // Al cambiar la opción, recarga la lista
         choiceTitle.setOnAction((event) -> {
             String selected = choiceTitle.getValue();
-            Main.tema.equals(selected); // <-- aquí se establece el tema
-            labelNom.setText(selected);
+            // Main.tema.equals(selected); // <-- aquí se establece el tema
+            // Main.selectedItem = false;
+            // Main.selected = true;
+            // Main.id_item = 0;
+            labelNom.setText("");
+            circle.setStyle("");
+            textFieldDescription.setText("");
+            image.setImage(null);
             loadList(selected); // <-- aquí se carga dinámicamente
         });
     }

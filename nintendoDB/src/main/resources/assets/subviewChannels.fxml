@@ -7,7 +7,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="62.0" maxWidth="395.0" minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" onMouseClicked="#toViewChannel" prefHeight="62.0" prefWidth="395.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nintendoDB.ControllerItem3">
+<AnchorPane maxHeight="62.0" maxWidth="395.0" minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" onMouseClicked="#toViewChannel" prefHeight="62.0" prefWidth="395.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.project.ControllerItem3">
    <children>
       <ImageView fx:id="image" fitHeight="43.0" fitWidth="78.0" layoutX="262.0" layoutY="8.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="11.0" AnchorPane.leftAnchor="262.0" AnchorPane.rightAnchor="55.0" AnchorPane.topAnchor="8.0" />
       <Label fx:id="title" layoutX="4.0" prefHeight="27.0" prefWidth="325.0" text="TitleText" AnchorPane.leftAnchor="4.0" AnchorPane.rightAnchor="66.0" AnchorPane.topAnchor="0.0">

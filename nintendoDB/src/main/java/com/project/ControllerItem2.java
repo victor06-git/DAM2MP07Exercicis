@@ -1,4 +1,4 @@
-package com.nintendoDB;
+package com.project;
 
 import java.util.Objects;
 
@@ -12,7 +12,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
 
 
-public class ControllerItem3 {
+public class ControllerItem2 {
     
     @FXML
     private Label title;
@@ -24,6 +24,10 @@ public class ControllerItem3 {
     private Circle circle;
 
     private String description;
+
+    public void setDescription(String description){
+        this.description = description;
+    }
 
     public void setTitle(String title) {
         this.title.setText(title);
@@ -43,16 +47,13 @@ public class ControllerItem3 {
         circle.setStyle("-fx-fill: " + color);
     }
 
-    public void setDescription(String description){
-        this.description = description;
-    }
-
-    public void toViewChannel(MouseEvent event){
-        ControllerChannel crtl = (ControllerChannel) UtilsViews.getController("ViewChannel");
+    public void toViewSerie(MouseEvent event){
+        ControllerSerie crtl = (ControllerSerie) UtilsViews.getController("ViewSerie");
         crtl.setNom(title.getText());
         crtl.setCircle(circle.getStyle());
         crtl.setImage(image.getImage());
         crtl.setDescription(description);
-        UtilsViews.setViewAnimating("ViewChannel");
+        
+        UtilsViews.setViewAnimating("ViewSerie");
     }
 }
