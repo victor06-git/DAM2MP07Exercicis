@@ -1,42 +1,41 @@
 package com.project;
 
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.control.TextField;
-import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.text.Text;
-import javafx.event.ActionEvent;
-import javafx.application.Platform;
-import java.net.URL;
-import java.util.ResourceBundle;
-import javafx.fxml.Initializable;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.InputStream;
-import java.io.File;
 import java.nio.file.Files;
 import java.util.Base64;
+import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javafx.stage.FileChooser;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.FontPosture;
-import javafx.scene.text.TextFlow;
-import java.io.PrintStream;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import javafx.stage.FileChooser;
 
 public class Controller implements Initializable {
 
@@ -55,6 +54,9 @@ public class Controller implements Initializable {
 
     @FXML
     private TextField messageText;
+
+    @FXML
+    private Button cancelButton;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private CompletableFuture<HttpResponse<InputStream>> streamRequest;
@@ -94,15 +96,6 @@ public class Controller implements Initializable {
             userIcon = null;
         }
         
-        // Configurar botó Send desactivat inicialment
-        sendButton.setDisable(false);
-
-        
-        // Configurar listener per a la tecla ESC per cancel·lar peticions
-        messageText.setOnKeyPressed(event -> {
-            if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
-                cancelRequest();
-            }});
     }
 
     // --- UI Actions ---
@@ -157,10 +150,13 @@ public class Controller implements Initializable {
         displayUserMessage(currentUserMessage);
 
         isCancelled.set(false);
-        
-        // Desactivar botó mentre processa
+    
+        // Desactivar botones mientras procesa
         sendButton.setDisable(true);
         uploadButton.setDisable(true);
+        if (cancelButton != null) {
+            cancelButton.setDisable(false); // Habilitar cancelación
+        }
 
         if (selectedImageBase64 != null) {
             // Petició amb imatge (visió)
@@ -192,6 +188,40 @@ public class Controller implements Initializable {
 
         //Netejar el component
         messageText.clear();
+    }
+
+    @FXML
+    private void callBreak(ActionEvent event) {
+        isCancelled.set(true);
+        
+        // Cancelar la petición de streaming
+        if (streamRequest != null && !streamRequest.isDone()) {
+            streamRequest.cancel(true);
+        }
+        
+        // Cancelar la petición completa
+        if (completeRequest != null && !completeRequest.isDone()) {
+            completeRequest.cancel(true);
+        }
+        
+        // Cerrar el InputStream si está abierto
+        if (currentInputStream != null) {
+            try {
+                currentInputStream.close();
+            } catch (Exception e) {
+                // Ignorar errores al cerrar
+            }
+        }
+        
+        // Cancelar la tarea de lectura del stream
+        if (streamReadingTask != null && !streamReadingTask.isDone()) {
+            streamReadingTask.cancel(true);
+        }
+        
+        Platform.runLater(() -> {
+            updateAIMessage("Petició cancel·lada.");
+            resetButtons();
+        });
     }
 
     // --- Request Helpers ---
@@ -274,15 +304,17 @@ public class Controller implements Initializable {
             });
     }
 
-    // Llegir resposta en streaming
-    private void handleStreamResponse() {
+   private void handleStreamResponse() {
         try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(currentInputStream, StandardCharsets.UTF_8))) {
+            new InputStreamReader(currentInputStream, StandardCharsets.UTF_8))) {
             String line;
             StringBuilder aiResponse = new StringBuilder();
 
             while ((line = reader.readLine()) != null) {
-                if (isCancelled.get()) break;
+                // Verificar si se ha cancelado o interrumpido
+                if (isCancelled.get() || Thread.currentThread().isInterrupted()) {
+                    break;
+                }
                 if (line.isBlank()) continue;
 
                 JSONObject jsonResponse = new JSONObject(line);
@@ -295,9 +327,13 @@ public class Controller implements Initializable {
                 Platform.runLater(() -> updateAIMessage(currentResponse));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!isCancelled.get()) {
+                e.printStackTrace();
+            }
             Platform.runLater(() -> { 
-                updateAIMessage("Error durant el streaming."); 
+                if (!isCancelled.get()) {
+                    updateAIMessage("Error durant el streaming."); 
+                }
                 resetButtons(); 
             });
         } finally {
@@ -399,49 +435,7 @@ public class Controller implements Initializable {
 
     // --- Utility Methods ---
 
-    // Mètode per cancel·lar la petició actual amb la tecla ESC
-    private void cancelRequest() {
-        if (isCancelled.get()) {
-            return; // Ja està cancel·lat
-        }
-
-        isCancelled.set(true);
-
-        // Cancel·lar petició de streaming
-        if (streamRequest != null && !streamRequest.isDone()) {
-            streamRequest.cancel(true);
-        }
-
-        // Cancel·lar petició completa
-        if (completeRequest != null && !completeRequest.isDone()) {
-            completeRequest.cancel(true);
-        }
-
-        // Tancar l'stream actual
-        if (currentInputStream != null) {
-            try {
-                currentInputStream.close();
-            } catch (Exception ignore) {}
-        }
-
-        // Cancel·lar tasca de lectura
-        if (streamReadingTask != null && !streamReadingTask.isDone()) {
-            streamReadingTask.cancel(true);
-        }
-
-        Platform.runLater(() -> {
-            // Actualizar el último mensaje de la IA con "Cancelado"
-            int size = textInfo.getChildren().size();
-            if (size > 0) {
-                Object lastChild = textInfo.getChildren().get(size - 1);
-                if (lastChild instanceof Text) {
-                    Text aiMsg = (Text) lastChild;
-                    aiMsg.setText("    [Petició cancel·lada]");
-                }
-            }
-            resetButtons();
-        });
-    }
+    
 
     private String tryParseAnyMessage(String bodyStr) {
         try {
@@ -456,9 +450,11 @@ public class Controller implements Initializable {
     private void resetButtons() {
         sendButton.setDisable(false);
         uploadButton.setDisable(false);
+        if (cancelButton != null) {
+            cancelButton.setDisable(true);
+        }
         streamRequest = null;
         completeRequest = null;
-        // Netejar la imatge seleccionada després d'enviar
         selectedImageBase64 = null;
     }
 

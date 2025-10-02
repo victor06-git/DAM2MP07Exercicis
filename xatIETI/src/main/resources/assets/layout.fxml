@@ -39,5 +39,6 @@
             </ToolBar>
          </children>
       </VBox>
+      <Button fx:id="cancelButton" layoutX="454.0" layoutY="1.0" mnemonicParsing="false" onAction="#callBreak" text="Cancel" />
    </children>
 </AnchorPane>
