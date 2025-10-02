@@ -8,8 +8,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 
 <AnchorPane prefHeight="430.0" prefWidth="528.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.project.Controller">
    <children>
@@ -17,22 +16,18 @@
          <children>
             <ScrollPane fx:id="scrollPane" hbarPolicy="NEVER" prefHeight="334.0" prefWidth="507.0">
                <content>
-                  <Text fx:id="textInfo" strokeType="OUTSIDE" strokeWidth="0.0" text="Bienvenido al teu xat preferit!" textAlignment="JUSTIFY" wrappingWidth="480.0">
-                     <font>
-                        <Font size="16.0" />
-                     </font>
-                  </Text>
+                  <TextFlow fx:id="textInfo" prefHeight="331.0" prefWidth="491.0" />
                </content>
             </ScrollPane>
             <ToolBar prefHeight="53.0" prefWidth="495.0" style="-fx-background-color: black;">
               <items>
-                <Button fx:id="uploadButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="35.0" style="-fx-background-color: white;">
+                <Button fx:id="uploadButton" mnemonicParsing="false" onAction="#handleUpload" prefHeight="25.0" prefWidth="35.0" style="-fx-background-color: white;">
                      <graphic>
                         <ImageView fx:id="uploadImage" fitHeight="29.0" fitWidth="29.0" pickOnBounds="true" preserveRatio="true" />
                      </graphic>
                   </Button>
                   <TextField fx:id="messageText" prefHeight="36.0" prefWidth="383.0" />
-                  <Button fx:id="sendButton" mnemonicParsing="false" style="-fx-background-color: white;">
+                  <Button fx:id="sendButton" mnemonicParsing="false" onAction="#handleSend" style="-fx-background-color: white;">
                      <graphic>
                         <ImageView fx:id="sendImage" fitHeight="33.0" fitWidth="28.0" pickOnBounds="true" preserveRatio="true" />
                      </graphic>
