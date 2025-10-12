@@ -60,15 +60,6 @@ public class Main extends Application {
         stage.show();
         UtilsViews.setView("Mobile");
 
-        // Afegeix un listener per detectar canvis en les dimensions de la finestra
-        stage.widthProperty().addListener((obs, oldVal, newVal) -> {
-            System.out.println("Width changed: " + newVal);
-        });
-
-        stage.heightProperty().addListener((obs, oldVal, newVal) -> {
-            System.out.println("Height changed: " + newVal);
-        });
-
         // Add icon only if not Mac
         if (!System.getProperty("os.name").contains("Mac")) {
             Image icon = new Image("file:/icons/icon.png");
@@ -77,46 +68,35 @@ public class Main extends Application {
     }
 
     private void _setLayout(int width) {
-        System.out.println("=== _setLayout  ===");
-        System.out.println("Width: " + width);
-        System.out.println("currentJSON: " + Main.currentJSON);
-        System.out.println("currentObject: " + Main.currentObject);
-        System.out.println("currentObjects size: " + Main.currentObjects.size());
 
         if (width < 750) {
-            System.out.println("Mobile mode");
             // Vista MOBILE
             if (currentObject != -1) {
-                System.out.println("Showing detail view");
                 showDetailView();
             } else if (!currentObjects.isEmpty()) {
-                System.out.println("Showing list view");
                 showListView();
             } else {
-                System.out.println("Showing main menu");
                 UtilsViews.setView("Mobile");
             }
         } else {
-            System.out.println("Desktop mode");
             UtilsViews.setView("Desktop");
 
             ControllerDesktop ctrlDesktop = (ControllerDesktop) UtilsViews.getController("Desktop");
             if (ctrlDesktop != null) {
-                // Fuerza refresco de la lista (tu código actual)
-                ctrlDesktop.initialize(null, null);
-
-                if (ctrlDesktop != null) {
-                    // NUEVO: Usa refresh en lugar de initialize(null, null)
-                    // Pasa currentJSON y currentObject para recargar todo correctamente
-                    Platform.runLater(() -> {
-                        ctrlDesktop.refresh(Main.currentJSON, Main.currentObject);
-                    });
-                }
+                Platform.runLater(() -> {
+                    ctrlDesktop.refresh(Main.currentJSON, Main.currentObject);
+                });
             }
         }
     }
 
     private void showDetailView() {
+
+        if (Main.currentObject == -1 || Main.currentObjects.isEmpty()) {
+            showListView();
+            return;
+        }
+
         switch (currentJSON) {
             case "Characters":
                 UtilsViews.setView("ViewCharacter");

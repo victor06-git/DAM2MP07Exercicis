@@ -33,7 +33,6 @@ public class ControllerSerie implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         if (Main.currentObject != -1 && "Series".equals(Main.currentJSON)) {
-            System.out.println("➡️ Cambiando a ViewSerie con JSON = " + Main.currentJSON);
             showData();
         }
 

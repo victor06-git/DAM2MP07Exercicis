@@ -148,8 +148,6 @@ public class ControllerDesktop implements Initializable {
 
     // Carrega la llista
     public void loadList(String category) {
-        System.out.println("=== loadList called ===");
-        System.out.println("category parameter: " + category);
 
         try {
             // Selección del archivo JSON
@@ -176,8 +174,6 @@ public class ControllerDesktop implements Initializable {
                 System.err.println("jsonFile is null, returning");
                 return;
             }
-
-            System.out.println("Loading JSON file: " + jsonFile);
 
             URL jsonFileURL = getClass().getResource(jsonFile);
             Path path = Paths.get(jsonFileURL.toURI());
@@ -278,23 +274,29 @@ public class ControllerDesktop implements Initializable {
     }
 
     public void refresh(String jsonType, int objectIndex) {
-        System.out.println("=== refresh called ===");
-        System.out.println("jsonType: " + jsonType + ", objectIndex: " + objectIndex);
+
         // Actualizar estado global
         Main.currentJSON = jsonType;
         Main.currentObject = objectIndex;
-        // Restaurar categoría en ChoiceBox (sin disparar listener para evitar reset de
-        // currentObject)
+
+        // Restaurar categoría en ChoiceBox SIN disparar el listener
         String category = getCategoryFromJSON(jsonType);
         if (choiceTitle.getItems().contains(category)) {
-            choiceTitle.setValue(category); // No dispara onAction porque lo seteamos directamente
+            // Temporalmente remover el listener
+            choiceTitle.setOnAction(null);
+            choiceTitle.setValue(category);
+            // Restaurar el listener
+            choiceTitle.setOnAction((event) -> {
+                String selected = choiceTitle.getValue();
+                updateCategory(selected);
+            });
         }
-        // Cargar lista (esto actualiza currentObjects)
+
+        // Cargar lista
         loadList(category);
-        // Si hay selección, mostrar detalle (con delay para asegurar que la vista esté
-        // lista)
+
+        // Si hay selección, mostrar detalle
         if (objectIndex != -1) {
-            // Usa Platform.runLater para threading, similar a Mobile
             javafx.application.Platform.runLater(() -> showDetailData());
         } else {
             clearDetails();

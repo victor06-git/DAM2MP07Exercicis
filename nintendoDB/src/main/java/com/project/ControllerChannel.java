@@ -33,7 +33,6 @@ public class ControllerChannel implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         if (Main.currentObject != -1 && "Channels".equals(Main.currentJSON)) {
-            System.out.println("➡️ Cambiando a ViewChannel con JSON = " + Main.currentJSON);
             showData();
         }
 
@@ -47,7 +46,6 @@ public class ControllerChannel implements Initializable {
             e.printStackTrace();
         }
 
-        showData();
     }
 
     public void showData() {

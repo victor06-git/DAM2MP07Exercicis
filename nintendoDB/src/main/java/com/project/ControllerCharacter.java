@@ -29,7 +29,6 @@ public class ControllerCharacter implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         if (Main.currentObject != -1 && "Characters".equals(Main.currentJSON)) {
-            System.out.println("➡️ Cambiando a ViewCharacter con JSON = " + Main.currentJSON);
             showData();
         }
 
