@@ -1,4 +1,5 @@
 package com.project;
+
 import com.utils.UtilsViews;
 
 import java.net.URL;
@@ -10,8 +11,6 @@ import java.util.ResourceBundle;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -32,6 +31,7 @@ public class ControllerChannels implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+
         Path imagePath = null;
         try {
             URL imageURL = getClass().getResource("/assets/images0601/arrow-back.png");
@@ -41,26 +41,35 @@ public class ControllerChannels implements Initializable {
             System.err.println("Error loading image asset: " + imagePath);
             e.printStackTrace();
         }
+
+        loadList();
     }
 
     public void loadList() {
         try {
+            Main.currentJSON = "Channels";
+
             URL jsonFileURL = getClass().getResource("/assets/data/channels.json");
             Path path = Paths.get(jsonFileURL.toURI());
             String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
             JSONArray jsonInfo = new JSONArray(content);
             String pathImages = "/assets/images0601/";
-            
-            list.getChildren().clear();
+
+            // Actualizar el estado global
+            Main.currentObjects.clear();
             for (int i = 0; i < jsonInfo.length(); i++) {
-                JSONObject character = jsonInfo.getJSONObject(i);
-                String name = character.getString("name");
-                String image = character.getString("image");
-                String color = character.getString("color");
-                String description = character.getString("description");
-                
-                // TODO: Aquí carregar subvista  
-                // amb les dades de cada objecte enlloc d'un Label
+                Main.currentObjects.add(jsonInfo.getJSONObject(i));
+            }
+
+            list.getChildren().clear();
+
+            for (int i = 0; i < jsonInfo.length(); i++) {
+                JSONObject channel = jsonInfo.getJSONObject(i);
+                String name = channel.getString("name");
+                String image = channel.getString("image");
+                String color = channel.getString("color");
+                String description = channel.getString("description");
+
                 URL resource = this.getClass().getResource("/assets/subviewChannels.fxml");
                 FXMLLoader loader = new FXMLLoader(resource);
                 Parent itemPane = loader.load();
@@ -68,8 +77,9 @@ public class ControllerChannels implements Initializable {
 
                 itemController.setCircleColor(color);
                 itemController.setImage(pathImages + image);
-                itemController.setTitle(name);        
-                itemController.setDescription(description);        
+                itemController.setTitle(name);
+                itemController.setDescription(description);
+                itemController.setIndex(i);
 
                 // Afegir el nou element a l'espai que l'hi hem reservat (itemBox)
                 list.getChildren().add(itemPane);
@@ -82,6 +92,8 @@ public class ControllerChannels implements Initializable {
 
     @FXML
     private void toViewMain(MouseEvent event) {
+        Main.currentObject = -1;
+        Main.currentObjects.clear();
         UtilsViews.setViewAnimating("Mobile");
     }
 }

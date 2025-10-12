@@ -11,9 +11,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
 
-
 public class ControllerItem2 {
-    
+
     @FXML
     private Label title;
 
@@ -25,7 +24,9 @@ public class ControllerItem2 {
 
     private String description;
 
-    public void setDescription(String description){
+    private int index;
+
+    public void setDescription(String description) {
         this.description = description;
     }
 
@@ -47,13 +48,18 @@ public class ControllerItem2 {
         circle.setStyle("-fx-fill: " + color);
     }
 
-    public void toViewSerie(MouseEvent event){
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public void toViewSerie(MouseEvent event) {
+        Main.currentObject = index;
+        Main.currentJSON = "Series";
+
         ControllerSerie crtl = (ControllerSerie) UtilsViews.getController("ViewSerie");
-        crtl.setNom(title.getText());
-        crtl.setCircle(circle.getStyle());
-        crtl.setImage(image.getImage());
-        crtl.setDescription(description);
-        
+        if (crtl != null) {
+            crtl.showData();
+        }
         UtilsViews.setViewAnimating("ViewSerie");
     }
 }

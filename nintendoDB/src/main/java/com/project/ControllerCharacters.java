@@ -40,26 +40,35 @@ public class ControllerCharacters implements Initializable {
             System.err.println("Error loading image asset: " + imagePath);
             e.printStackTrace();
         }
+
+        loadList();
     }
 
     public void loadList() {
         try {
+            Main.currentJSON = "Characters";
+
             URL jsonFileURL = getClass().getResource("/assets/data/characters.json");
             Path path = Paths.get(jsonFileURL.toURI());
             String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
             JSONArray jsonInfo = new JSONArray(content);
             String pathImages = "/assets/images0601/";
-            
+
+            // Actualizar el estado global
+            Main.currentObjects.clear();
+            for (int i = 0; i < jsonInfo.length(); i++) {
+                Main.currentObjects.add(jsonInfo.getJSONObject(i));
+            }
+
             list.getChildren().clear();
+
             for (int i = 0; i < jsonInfo.length(); i++) {
                 JSONObject character = jsonInfo.getJSONObject(i);
                 String name = character.getString("name");
                 String image = character.getString("image");
                 String color = character.getString("color");
                 String series = character.getString("series");
-                
-                // TODO: Aquí carregar subvista  
-                // amb les dades de cada objecte enlloc d'un Label
+
                 URL resource = this.getClass().getResource("/assets/subviewCharacters.fxml");
                 FXMLLoader loader = new FXMLLoader(resource);
                 Parent itemPane = loader.load();
@@ -69,7 +78,7 @@ public class ControllerCharacters implements Initializable {
                 itemController.setImage(pathImages + image);
                 itemController.setTitle(name);
                 itemController.setSubtitle(series);
-                
+                itemController.setIndex(i);
 
                 // Afegir el nou element a l'espai que l'hi hem reservat (itemBox)
                 list.getChildren().add(itemPane);
@@ -82,6 +91,8 @@ public class ControllerCharacters implements Initializable {
 
     @FXML
     private void toViewMain(MouseEvent event) {
+        Main.currentObject = -1;
+        Main.currentObjects.clear();
         UtilsViews.setViewAnimating("Mobile");
     }
 }

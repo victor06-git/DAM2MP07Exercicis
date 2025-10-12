@@ -40,26 +40,37 @@ public class ControllerSeries implements Initializable {
             System.err.println("Error loading image asset: " + imagePath);
             e.printStackTrace();
         }
+
+        loadList();
     }
 
     public void loadList() {
         try {
+            Main.currentJSON = "Series";
+
             URL jsonFileURL = getClass().getResource("/assets/data/series.json");
             Path path = Paths.get(jsonFileURL.toURI());
             String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
             JSONArray jsonInfo = new JSONArray(content);
             String pathImages = "/assets/images0601/";
-            
-            list.getChildren().clear();
+
+            // Actualizar el estado global
+            Main.currentObjects.clear();
             for (int i = 0; i < jsonInfo.length(); i++) {
-                JSONObject character = jsonInfo.getJSONObject(i);
-                String name = character.getString("name");
-                String image = character.getString("image");
-                String color = character.getString("color");
-                String description = character.getString("description");
-                
-                // TODO: Aquí carregar subvista  
-                // amb les dades de cada objecte enlloc d'un Label
+                Main.currentObjects.add(jsonInfo.getJSONObject(i));
+            }
+
+            list.getChildren().clear();
+
+            for (int i = 0; i < jsonInfo.length(); i++) {
+                JSONObject serie = jsonInfo.getJSONObject(i);
+                // int index = i;
+
+                String name = serie.getString("name");
+                String image = serie.getString("image");
+                String color = serie.getString("color");
+                String description = serie.getString("description");
+
                 URL resource = this.getClass().getResource("/assets/subviewSeries.fxml");
                 FXMLLoader loader = new FXMLLoader(resource);
                 Parent itemPane = loader.load();
@@ -67,8 +78,9 @@ public class ControllerSeries implements Initializable {
 
                 itemController.setCircleColor(color);
                 itemController.setImage(pathImages + image);
-                itemController.setTitle(name);       
-                itemController.setDescription(description);         
+                itemController.setTitle(name);
+                itemController.setDescription(description);
+                itemController.setIndex(i);
 
                 // Afegir el nou element a l'espai que l'hi hem reservat (itemBox)
                 list.getChildren().add(itemPane);
@@ -81,6 +93,9 @@ public class ControllerSeries implements Initializable {
 
     @FXML
     private void toViewMain(MouseEvent event) {
+        // Limpiar campos
+        Main.currentObject = -1;
+        Main.currentObjects.clear();
         UtilsViews.setViewAnimating("Mobile");
     }
 }

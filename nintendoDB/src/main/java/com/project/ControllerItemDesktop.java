@@ -12,7 +12,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
 
 public class ControllerItemDesktop {
-    
 
     @FXML
     private Label title, subtitle;
@@ -22,6 +21,8 @@ public class ControllerItemDesktop {
 
     @FXML
     private Circle circle;
+
+    private int index; // Indice de la lista json
 
     public void setTitle(String title) {
         this.title.setText(title);
@@ -45,12 +46,23 @@ public class ControllerItemDesktop {
         circle.setStyle("-fx-fill: " + color);
     }
 
-    public void toViewCharacter(MouseEvent event){
-        ControllerDesktop crtl = (ControllerDesktop) UtilsViews.getController("Desktop");
-        crtl.setNom(title.getText());
-        crtl.setCircle(circle.getStyle());
-        crtl.setSubtitle(subtitle.getText());
-        crtl.setImage(image.getImage());
+    // Establecer el índice (aunque en Desktop se usa listener directo)
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    // NUEVO: Obtener el índice (por si necesitas accederlo desde ControllerDesktop)
+    public int getIndex() {
+        return this.index;
+    }
+
+    @FXML
+    public void toViewItem(MouseEvent event) {
+        Main.currentObject = index;
+        ControllerDesktop ctrl = (ControllerDesktop) UtilsViews.getController("Desktop");
+        if (ctrl != null) {
+            ctrl.showDetailData(); // Carga el detalle en el panel derecho
+        }
     }
 
 }

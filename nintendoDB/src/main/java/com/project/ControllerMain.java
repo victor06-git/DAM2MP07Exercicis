@@ -15,7 +15,6 @@ public class ControllerMain {
     @FXML
     private ImageView characterImage, seriesImage, channelImage;
 
-
     @FXML
     public void initialize() {
         Image img = new Image(getClass().getResourceAsStream("/icons/simpsons.gif"));
@@ -26,11 +25,12 @@ public class ControllerMain {
         seriesImage.setImage(img_serie);
         Image img_channel = new Image(getClass().getResourceAsStream("/icons/simpson.gif"));
         channelImage.setImage(img_channel);
-        
+
     }
 
     @FXML
     private void toViewCharacters(MouseEvent event) {
+        Main.currentJSON = "Characters";
         ControllerCharacters ctrlCharacters = (ControllerCharacters) UtilsViews.getController("ViewCharacters");
         ctrlCharacters.loadList();
         UtilsViews.setViewAnimating("ViewCharacters");
@@ -38,6 +38,7 @@ public class ControllerMain {
 
     @FXML
     private void toViewSeries(MouseEvent event) {
+        Main.currentJSON = "Series";
         ControllerSeries ctrlSeries = (ControllerSeries) UtilsViews.getController("ViewSeries");
         ctrlSeries.loadList();
         UtilsViews.setViewAnimating("ViewSeries");
@@ -45,6 +46,7 @@ public class ControllerMain {
 
     @FXML
     private void toViewChannels(MouseEvent event) {
+        Main.currentJSON = "Channels";
         ControllerChannels ctrlChannels = (ControllerChannels) UtilsViews.getController("ViewChannels");
         ctrlChannels.loadList();
         UtilsViews.setViewAnimating("ViewChannels");
