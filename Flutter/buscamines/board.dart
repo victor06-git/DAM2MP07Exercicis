@@ -176,4 +176,25 @@ class Board {
     }
     return false;
   }
+
+  // Check if the player has won (all mines flagged, no incorrect flags)
+  bool checkWin() {
+    int correctFlags = 0;
+    int totalFlags = 0;
+
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < columns; c++) {
+        Cell cell = grid[r][c];
+        if (cell.isFlagged) {
+          totalFlags++;
+          if (cell.isMine) {
+            correctFlags++;
+          }
+        }
+      }
+    }
+
+    // Win condition: all mines are flagged and no extra flags
+    return correctFlags == mineCount && totalFlags == mineCount;
+  }
 }

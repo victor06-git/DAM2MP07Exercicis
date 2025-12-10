@@ -74,6 +74,17 @@ void main() {
                   ? "Bandera posada."
                   : "Bandera treta. Casella llesta per descobrir.",
             );
+
+            // Verificar si el jugador ha ganado
+            if (myBoard.checkWin()) {
+              print("\n🎉 FELICITATS! Has guanyat!");
+              print("-----------------------------------");
+              myBoard.printBoard(revealMines: true);
+              print("-----------------------------------");
+              print("Has col·locat totes les banderes correctament.");
+              print("Total de tirades realitzades: $tirades");
+              playing = false; // Terminar la partida
+            }
           } else {
             print("No pots posar bandera en una casella destapada.");
           }
