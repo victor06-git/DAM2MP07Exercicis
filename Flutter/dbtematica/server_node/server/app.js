@@ -1,105 +1,158 @@
-const express = require('express')
-const app = express()
-const port = 3000
-const multer = require('multer')
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
+const { getEnabledCategories } = require('trace_events');
 
-// Continguts estàtics (carpeta public)
-app.use(express.static('public'))
+const compression = require('compression');
+const app = express();
+const port = 3000;
 
-// Configurar direcció ‘/’ 
-app.get('/', getHello)
-    async function getHello (req, res) {
-    res.send(`Hola Hola des del servidor Node.js amb Express!`)
-}
+// Middlewares
+app.use(compression());
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static('public'));
+app.use('/images', express.static(path.join(__dirname, 'data/images')));
+// Servir miniaturas si existen; en caso contrario, devolver la imagen original
+app.get('/images/thumbs/:imageName', (req, res) => {
+    const imageName = req.params.imageName;
+    const thumbPath = path.join(__dirname, 'data/images/thumbs', imageName);
+    const mainPath = path.join(__dirname, 'data/images', imageName);
+    if (fs.existsSync(thumbPath)) {
+        res.sendFile(thumbPath);
+    } else if (fs.existsSync(mainPath)) {
+        // Fallback: servir la imagen principal si no hay miniatura
+        res.sendFile(mainPath);
+    } else {
+        res.status(404).send('Not found');
+    }
+});
 
-// Activar el servidor
-const httpServer = app.listen(port, appListen)
-function appListen () {
-    console.log(`Example app listening on: http://0.0.0.0:${port}`)
-}
+// Cargar datos desde JSON
+const dataPath = path.join(__dirname, 'data');
+const categories = JSON.parse(fs.readFileSync(path.join(dataPath, 'categories.json'), 'utf8'));
+const items = JSON.parse(fs.readFileSync(path.join(dataPath, 'items.json'), 'utf8'));
 
-// Aturar el servidor correctament 
-process.on('SIGTERM', shutDown);
-process.on('SIGINT', shutDown);
-function shutDown() {
-    console.log('Received kill signal, shutting down gracefully');
-    httpServer.close()
-    process.exit(0);
-}
+app.get('/categories', (req, res) => {
+    res.json(categories);
+ });
 
-// http://localhost:3000/api?param1=value1&param2=value2
-app.get('/api', async (req, res) => {
-    // Obtenir el valor de "param1"
-    const param1 = req.query.param1 
+// GET /items?categoryId=1&page=1&pageSize=20 - devuelve items paginados (opcional)
+app.get('/items', (req, res) => {
+    const categoryId = req.query.categoryId ? parseInt(req.query.categoryId) : null;
+    const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
+    const pageSize = req.query.pageSize ? Math.max(1, parseInt(req.query.pageSize)) : 20;
 
-    // Obtenir el valor de "param2"
-    const param2 = req.query.param2
+    let filtered = items;
+    if (categoryId) {
+        filtered = items.filter(item => item.categoryId === categoryId);
+    }
+
+    const start = (page - 1) * pageSize;
+    const paged = filtered.slice(start, start + pageSize);
 
     res.json({
-        message: 'Dades rebudes',
-        param1: param1,
-        param2: param2
-    })
-})
+        page,
+        pageSize,
+        total: filtered.length,
+        items: paged
+    });
+});
+// --- Rutas para la App de Películas ---
+
+app.post('/categories', (req, res) => {
+  res.json(categories);
+});
+
+app.post('/items', (req, res) => {
+  const { categoryId } = req.body;
+  if (categoryId) {
+    // Filtrar items por categoryId si se proporciona
+    const filteredItems = items.filter(item => item.categoryId === parseInt(categoryId));
+    res.json(filteredItems);
+  } else {
+    // Devolver todos los items si no hay categoryId
+    res.json(items);
+  }
+});
+
+app.post('/item', (req, res) => {
+  const { itemId } = req.body;
+  const item = items.find(i => i.id === parseInt(itemId));
+  if (item) {
+    res.json(item);
+  } else {
+    res.status(404).send('Item not found');
+  }
+});
+
+// --- Rutas existentes para subida de archivos (Multer) ---
 
 // Crear la carpeta 'uploads' si no existeix
-const fs = require('fs')
 if (!fs.existsSync('uploads')) {
-    fs.mkdirSync('uploads')
+    fs.mkdirSync('uploads');
 }
 
 // Tipus MIME acceptats
-const allowedMimeTypes = ['text/plain', 'image/jpeg', 'image/png', 'application/pdf']
+const allowedMimeTypes = ['text/plain', 'image/jpeg', 'image/png', 'application/pdf'];
 
 // Configurar multer per guardar arxius a la carpeta "uploads"
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        // Carpeta on es guarden els fitxers
-        cb(null, 'uploads') 
+        cb(null, 'uploads');
     },
     filename: (req, file, cb) => {
-        // Prefixar amb un timestamp per evitar col·lisions
-        cb(null, Date.now() + '-' + file.originalname) 
+        cb(null, Date.now() + '-' + file.originalname);
     }
-})
+});
 
-// Configuració de multer amb límit de mida i validació
 const upload = multer({
-    // Límit de 50 MB per fitxer
     storage: storage,
     limits: { fileSize: 50 * 1024 * 1024 }, 
     fileFilter: (req, file, cb) => {
         if (allowedMimeTypes.includes(file.mimetype)) {
-            cb(null, true) // Acceptar el fitxer
+            cb(null, true);
         } else {
-            cb(new Error('Tipus de fitxer no permès'), false) // Rebutjar el fitxer
+            cb(new Error('Tipus de fitxer no permès'), false);
         }
     }
-})
+});
 
 app.post('/upload', upload.array('files', 10), async (req, res) => {
     try {
-        // Obtenir l'objecte JSON
-        const jsonData = JSON.parse(req.body.json)
-
-        // Obtenir els arxius
+        const jsonData = JSON.parse(req.body.json);
         const files = req.files.map(file => ({
             originalName: file.originalname,
             mimeType: file.mimetype,
             size: file.size,
             path: file.path
-        }))
-
+        }));
         res.json({
             message: 'Dades rebudes',
             jsonData: jsonData,
             files: files
-        })
+        });
     } catch (error) {
-        res.status(400).json({ error: 'Error processant la petició', details: error.message })
+        res.status(400).json({ error: 'Error processant la petició', details: error.message });
     }
-})
+});
 
-app.listen(3000, () => {
-    console.log('Servidor escoltant al port 3000')
-})
+// --- Arranque y parada del servidor ---
+
+const httpServer = app.listen(port, () => {
+    console.log(`Servidor escoltant a http://localhost:${port}`);
+});
+
+process.on('SIGTERM', shutDown);
+process.on('SIGINT', shutDown);
+
+function shutDown() {
+    console.log('Received kill signal, shutting down gracefully');
+    httpServer.close(() => {
+        console.log('Closed out remaining connections');
+        process.exit(0);
+    });
+}

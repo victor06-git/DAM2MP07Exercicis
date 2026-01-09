@@ -1,10 +1,9 @@
 class Item {
-  final String id;
-  final String categoryId;
+  final int id;
+  final int categoryId;
   final String name;
   final String description;
-  final String
-  image; // Guardaremos solo el nombre del archivo, ej: "stratocaster.jpg"
+  final String image; // Nombre del archivo, ej: "harry_potter.jpg"
 
   Item({
     required this.id,
@@ -14,14 +13,16 @@ class Item {
     required this.image,
   });
 
-  // Constructor para crear un Item desde un JSON.
+  // Crear un Item desde JSON.
   factory Item.fromJson(Map<String, dynamic> json) {
     return Item(
-      id: json['id'],
-      categoryId: json['categoryId'],
-      name: json['name'],
-      description: json['description'],
-      image: json['image'],
+      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
+      categoryId: json['categoryId'] is int
+          ? json['categoryId']
+          : int.parse(json['categoryId'].toString()),
+      name: json['name'].toString(),
+      description: json['description'].toString(),
+      image: json['image'].toString(),
     );
   }
 }

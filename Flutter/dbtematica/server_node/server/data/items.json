@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "categoryId": 2,
+    "name": "Harry Potter",
+    "description": "Un niño descubre que es un mago y asiste a una escuela de magia.",
+    "image": "harry_potter.jpg"
+  },
+  {
+    "id": 2,
+    "categoryId": 1,
+    "name": "Los Goonies",
+    "description": "Un grupo de niños se embarca en una aventura para encontrar un tesoro pirata.",
+    "image": "goonies.jpeg"
+  },
+  {
+    "id": 3,
+    "categoryId": 3,
+    "name": "E.T. el Extraterrestre",
+    "description": "Un niño se hace amigo de un extraterrestre varado en la Tierra.",
+    "image": "et.jpg"
+  },
+  {
+    "id": 4,
+    "categoryId": 2,
+    "name": "El Señor de los Anillos",
+    "description": "Un hobbit debe destruir un anillo mágico para salvar el mundo.",
+    "image": "el_senor_de_los_anillos.jpg"
+  },
+  {
+    "id": 5,
+    "categoryId": 2,
+    "name": "El Hobbit",
+    "description": "Un hobbit se une a una compañía de enanos para reclamar su montaña a un dragón.",
+    "image": "el_hobbit.webp"
+  },
+  {
+    "id": 6,
+    "categoryId": 3,
+    "name": "Regreso al Futuro",
+    "description": "Un adolescente viaja en el tiempo a los años 50 y debe asegurarse de que sus padres se enamoren.",
+    "image": "regreso_al_futuro.jpg"
+  },
+  {
+    "id": 7,
+    "categoryId": 1,
+    "name": "Indiana Jones",
+    "description": "Un arqueólogo aventurero busca artefactos legendarios.",
+    "image": "indiana_jones.jpg"
+  },
+  {
+    "id": 8,
+    "categoryId": 1,
+    "name": "Jumanji",
+    "description": "Un juego de mesa mágico desata un mundo de aventuras y peligros.",
+    "image": "jumanji.webp"
+  },
+  {
+    "id": 9,
+    "categoryId": 2,
+    "name": "Gremlins",
+    "description": "Una pequeña criatura da a luz a otros que se transforman en pequeños monstruos destructivos.",
+    "image": "gremlins.jpg"
+  }
+]

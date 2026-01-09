@@ -4,12 +4,21 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node --watch --watch-path ./server ./server/app.js",
+    "pm2start": "pm2 start ./server/app.js --name app",
+    "pm2stop": "pm2 stop app",
+    "pm2restart": "pm2 restart app",
+    "pm2delete": "pm2 delete app",
+    "pm2list": "pm2 list",
+    "pm2logs": "pm2 logs app"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
     "express": "^5.2.1",
     "multer": "^2.0.2"
   }

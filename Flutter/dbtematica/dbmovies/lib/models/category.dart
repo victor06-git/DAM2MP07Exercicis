@@ -1,12 +1,14 @@
 class Category {
-  final String id;
+  final int id;
   final String name;
 
   Category({required this.id, required this.name});
 
-  // Este es un 'constructor con nombre' que nos permitirá crear una
-  // instancia de Category a partir del JSON que nos envía el servidor.
+  // Crear una instancia de Category a partir de JSON.
   factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(id: json['id'], name: json['name']);
+    return Category(
+      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
+      name: json['name'].toString(),
+    );
   }
 }
