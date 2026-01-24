@@ -40,7 +40,7 @@ import javafx.stage.FileChooser;
 public class Controller implements Initializable {
 
     // Models
-    private static final String TEXT_MODEL   = "gemma3:1b";
+    private static final String TEXT_MODEL = "gemma3:1b";
     private static final String VISION_MODEL = "llava-phi3";
 
     @FXML
@@ -50,7 +50,7 @@ public class Controller implements Initializable {
     private TextFlow textInfo;
 
     @FXML
-    private ImageView uploadImage, sendImage; 
+    private ImageView uploadImage, sendImage;
 
     @FXML
     private TextField messageText;
@@ -66,7 +66,7 @@ public class Controller implements Initializable {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Future<?> streamReadingTask;
     private volatile boolean isFirst = false;
-    
+
     // Variable per guardar la imatge seleccionada
     private String selectedImageBase64 = null;
     private String currentUserMessage = "";
@@ -81,33 +81,37 @@ public class Controller implements Initializable {
         Image img_character = new Image(getClass().getResourceAsStream("/icons/send.jpg"));
         sendImage.setImage(img_character);
 
-        //Carregar la imatge de Xat IETI i User
-        try{
+        // Carregar la imatge de Xat IETI i User
+        try {
             aiIcon = new Image(getClass().getResourceAsStream("/icons/ai_icon.png"));
         } catch (Exception e) {
             System.out.println("No s'ha pogut carregar la icona de la IA");
             aiIcon = null;
         }
 
-        try{
+        try {
             userIcon = new Image(getClass().getResourceAsStream("/icons/user_icon.png"));
         } catch (Exception e) {
             System.out.println("No s'ha pogut carregar la icona de User");
             userIcon = null;
         }
-        
+
     }
 
     // --- UI Actions ---
 
+    /**
+     * Acción botón subir imagen
+     * 
+     * @param event
+     */
     @FXML
     private void handleUpload(ActionEvent event) {
         // Escollir arxiu d'imatge
         FileChooser fc = new FileChooser();
         fc.setTitle("Choose an image");
         fc.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp", "*.gif")
-        );
+                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp", "*.gif"));
 
         // Establir directori inicial
         File initialDir = new File(System.getProperty("user.dir"));
@@ -115,7 +119,7 @@ public class Controller implements Initializable {
             fc.setInitialDirectory(initialDir);
         }
 
-        File file = fc.showOpenDialog(uploadButton.getScene().getWindow()); 
+        File file = fc.showOpenDialog(uploadButton.getScene().getWindow());
         if (file == null) {
             showSimpleMessage("No s'ha seleccionat cap fitxer.");
             return;
@@ -133,24 +137,29 @@ public class Controller implements Initializable {
         }
     }
 
-    //Acción botón enviar texto
+    /**
+     * Acción botón enviar texto
+     * 
+     * @param event
+     */
     @FXML
     private void handleSend(ActionEvent event) {
         String userMessage = messageText.getText();
-        
+
         if (userMessage == null || userMessage.trim().isEmpty()) {
             showSimpleMessage("Escriu un missatge abans d'enviar.");
             return;
         }
 
-        //Guardar missatge de l'usuari
+        // Guardar missatge de l'usuari
         currentUserMessage = userMessage;
 
-        //String conversationStart = "You\n" + currentUserMessage + "\n\n";
+        // String conversationStart = "You\n" + currentUserMessage + "\n\n";
         displayUserMessage(currentUserMessage);
 
+        // Reset cancel·lació
         isCancelled.set(false);
-    
+
         // Desactivar botones mientras procesa
         sendButton.setDisable(true);
         uploadButton.setDisable(true);
@@ -163,9 +172,9 @@ public class Controller implements Initializable {
             appendAIMessage("Thinking...", false);
             ensureModelLoaded(VISION_MODEL).whenComplete((v, err) -> {
                 if (err != null) {
-                    Platform.runLater(() -> { 
-                        updateAIMessage("Error carregant el model de visió."); 
-                        resetButtons(); 
+                    Platform.runLater(() -> {
+                        updateAIMessage("Error carregant el model de visió.");
+                        resetButtons();
                     });
                     return;
                 }
@@ -176,9 +185,9 @@ public class Controller implements Initializable {
             appendAIMessage("", true);
             ensureModelLoaded(TEXT_MODEL).whenComplete((v, err) -> {
                 if (err != null) {
-                    Platform.runLater(() -> { 
-                        updateAIMessage("Error carregant el model de text."); 
-                        resetButtons(); 
+                    Platform.runLater(() -> {
+                        updateAIMessage("Error carregant el model de text.");
+                        resetButtons();
                     });
                     return;
                 }
@@ -186,24 +195,30 @@ public class Controller implements Initializable {
             });
         }
 
-        //Netejar el component
+        // Netejar el component
         messageText.clear();
     }
 
+    /**
+     * Acción botón cancelar petición
+     * 
+     * @param event
+     */
     @FXML
     private void callBreak(ActionEvent event) {
+        // Marcar como cancelado
         isCancelled.set(true);
-        
+
         // Cancelar la petición de streaming
         if (streamRequest != null && !streamRequest.isDone()) {
             streamRequest.cancel(true);
         }
-        
+
         // Cancelar la petición completa
         if (completeRequest != null && !completeRequest.isDone()) {
             completeRequest.cancel(true);
         }
-        
+
         // Cerrar el InputStream si está abierto
         if (currentInputStream != null) {
             try {
@@ -212,12 +227,12 @@ public class Controller implements Initializable {
                 // Ignorar errores al cerrar
             }
         }
-        
+
         // Cancelar la tarea de lectura del stream
         if (streamReadingTask != null && !streamReadingTask.isDone()) {
             streamReadingTask.cancel(true);
         }
-        
+
         Platform.runLater(() -> {
             updateAIMessage("Petició cancel·lada.");
             resetButtons();
@@ -229,84 +244,89 @@ public class Controller implements Initializable {
     // Petició de text amb streaming
     private void executeTextRequest(String model, String prompt, boolean stream) {
         JSONObject body = new JSONObject()
-            .put("model", model)
-            .put("prompt", prompt)
-            .put("stream", stream)
-            .put("keep_alive", "10m");
+                .put("model", model)
+                .put("prompt", prompt)
+                .put("stream", stream)
+                .put("keep_alive", "10m");
 
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create("http://localhost:11434/api/generate"))
-            .header("Content-Type", "application/json")
-            .POST(BodyPublishers.ofString(body.toString()))
-            .build();
+                .uri(URI.create("http://localhost:11434/api/generate"))
+                .header("Content-Type", "application/json")
+                .POST(BodyPublishers.ofString(body.toString()))
+                .build();
 
         if (stream) {
             isFirst = true;
 
             streamRequest = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
-                .thenApply(response -> {
-                    currentInputStream = response.body();
-                    streamReadingTask = executorService.submit(this::handleStreamResponse);
-                    return response;
-                })
-                .exceptionally(e -> {
-                    if (!isCancelled.get()) e.printStackTrace();
-                    Platform.runLater(this::resetButtons);
-                    return null;
-                });
+                    .thenApply(response -> {
+                        currentInputStream = response.body();
+                        streamReadingTask = executorService.submit(this::handleStreamResponse);
+                        return response;
+                    })
+                    .exceptionally(e -> {
+                        if (!isCancelled.get())
+                            e.printStackTrace();
+                        Platform.runLater(this::resetButtons);
+                        return null;
+                    });
         }
     }
 
     // Petició amb imatge (resposta completa)
     private void executeImageRequest(String model, String prompt, String base64Image) {
         JSONObject body = new JSONObject()
-            .put("model", model)
-            .put("prompt", prompt)
-            .put("images", new JSONArray().put(base64Image))
-            .put("stream", false)
-            .put("keep_alive", "10m")
-            .put("options", new JSONObject()
-                .put("num_ctx", 2048)
-                .put("num_predict", 256)
-            );
+                .put("model", model)
+                .put("prompt", prompt)
+                .put("images", new JSONArray().put(base64Image))
+                .put("stream", false)
+                .put("keep_alive", "10m")
+                .put("options", new JSONObject()
+                        .put("num_ctx", 2048)
+                        .put("num_predict", 256));
 
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create("http://localhost:11434/api/generate"))
-            .header("Content-Type", "application/json")
-            .POST(BodyPublishers.ofString(body.toString()))
-            .build();
+                .uri(URI.create("http://localhost:11434/api/generate"))
+                .header("Content-Type", "application/json")
+                .POST(BodyPublishers.ofString(body.toString()))
+                .build();
 
         completeRequest = httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-            .thenApply(resp -> {
-                int code = resp.statusCode();
-                String bodyStr = resp.body();
+                .thenApply(resp -> {
+                    int code = resp.statusCode();
+                    String bodyStr = resp.body();
 
-                String msg = tryParseAnyMessage(bodyStr);
-                if (msg == null || msg.isBlank()) {
-                    msg = (code >= 200 && code < 300) ? "(resposta buida)" : "HTTP " + code + ": " + bodyStr;
-                }
+                    String msg = tryParseAnyMessage(bodyStr);
+                    if (msg == null || msg.isBlank()) {
+                        msg = (code >= 200 && code < 300) ? "(resposta buida)" : "HTTP " + code + ": " + bodyStr;
+                    }
 
-                final String toShow = msg;
-                Platform.runLater(() -> { 
-                    updateAIMessage(toShow);
-                    resetButtons(); //Resetea els buttons
+                    final String toShow = msg;
+                    Platform.runLater(() -> {
+                        updateAIMessage(toShow);
+                        resetButtons(); // Resetea els buttons
+                    });
+                    return resp;
+                })
+                .exceptionally(e -> {
+                    if (!isCancelled.get())
+                        e.printStackTrace();
+                    Platform.runLater(() -> {
+                        String conversationStart = "You\n" + currentUserMessage + "\n\n";
+                        updateAIMessage("Error en la petició.");
+                        resetButtons();
+                    });
+                    return null;
                 });
-                return resp;
-            })
-            .exceptionally(e -> {
-                if (!isCancelled.get()) e.printStackTrace();
-                Platform.runLater(() -> { 
-                    String conversationStart = "You\n" + currentUserMessage + "\n\n";
-                    updateAIMessage("Error en la petició."); 
-                    resetButtons(); 
-                });
-                return null;
-            });
     }
 
-   private void handleStreamResponse() {
+    /**
+     * Mètode per gestionar la resposta en streaming
+     * 
+     */
+    private void handleStreamResponse() {
         try (BufferedReader reader = new BufferedReader(
-            new InputStreamReader(currentInputStream, StandardCharsets.UTF_8))) {
+                new InputStreamReader(currentInputStream, StandardCharsets.UTF_8))) {
             String line;
             StringBuilder aiResponse = new StringBuilder();
 
@@ -315,11 +335,13 @@ public class Controller implements Initializable {
                 if (isCancelled.get() || Thread.currentThread().isInterrupted()) {
                     break;
                 }
-                if (line.isBlank()) continue;
+                if (line.isBlank())
+                    continue;
 
                 JSONObject jsonResponse = new JSONObject(line);
                 String chunk = jsonResponse.optString("response", "");
-                if (chunk.isEmpty()) continue;
+                if (chunk.isEmpty())
+                    continue;
 
                 aiResponse.append(chunk);
                 final String currentResponse = aiResponse.toString();
@@ -330,22 +352,29 @@ public class Controller implements Initializable {
             if (!isCancelled.get()) {
                 e.printStackTrace();
             }
-            Platform.runLater(() -> { 
+            Platform.runLater(() -> {
                 if (!isCancelled.get()) {
-                    updateAIMessage("Error durant el streaming."); 
+                    updateAIMessage("Error durant el streaming.");
                 }
-                resetButtons(); 
+                resetButtons();
             });
         } finally {
-            try { 
-                if (currentInputStream != null) currentInputStream.close(); 
-            } catch (Exception ignore) {}
+            try {
+                if (currentInputStream != null)
+                    currentInputStream.close();
+            } catch (Exception ignore) {
+            }
             Platform.runLater(this::resetButtons);
         }
     }
 
     // --- Display Method ---
 
+    /**
+     * Mètode per mostrar missatge de l'usuari
+     * 
+     * @param message
+     */
     private void displayUserMessage(String message) {
         Platform.runLater(() -> {
             textInfo.getChildren().clear();
@@ -358,10 +387,10 @@ public class Controller implements Initializable {
                 userIconView.setFitHeight(50);
                 userIconView.setPreserveRatio(true);
             }
-            
+
             // Añadir espacio después de la imagen
             Text spacing = new Text("  ");
-            
+
             // Títol "You" en negreta i més gran
             Text userTitle = new Text("You\n");
             userTitle.setFont(Font.font("System", FontWeight.BOLD, 18));
@@ -378,6 +407,12 @@ public class Controller implements Initializable {
         });
     }
 
+    /**
+     * Mètode per afegir missatge de la IA
+     * 
+     * @param message
+     * @param isStreaming
+     */
     private void appendAIMessage(String message, boolean isStreaming) {
         Platform.runLater(() -> {
             // Crear icona de la IA
@@ -390,16 +425,16 @@ public class Controller implements Initializable {
             }
 
             Text spacing = new Text("  "); // Espacios para separar
-            
+
             // Títol "Xat IETI" en negreta i més gran
             Text aiTitle = new Text(" Xat IETI\n");
             aiTitle.setFont(Font.font("System", FontWeight.BOLD, 18));
-            
+
             // Missatge de la IA con indentación
             String indentedMessage = message.isEmpty() ? "" : "    " + message.replace("\n", "\n    ");
             Text aiMsg = new Text(indentedMessage);
             aiMsg.setFont(Font.font("System", 14));
-            
+
             if (aiIconView != null) {
                 textInfo.getChildren().addAll(aiIconView, aiTitle, aiMsg);
             } else {
@@ -409,6 +444,11 @@ public class Controller implements Initializable {
         });
     }
 
+    /**
+     * Mètode per actualitzar el missatge de la IA
+     * 
+     * @param message
+     */
     private void updateAIMessage(String message) {
         Platform.runLater(() -> {
             int size = textInfo.getChildren().size();
@@ -431,22 +471,32 @@ public class Controller implements Initializable {
         });
     }
 
-
-
     // --- Utility Methods ---
 
-    
-
+    /**
+     * Mètode per intentar parsejar qualsevol missatge de resposta
+     * 
+     * @param bodyStr
+     * @return missatge o null
+     */
     private String tryParseAnyMessage(String bodyStr) {
         try {
             JSONObject o = new JSONObject(bodyStr);
-            if (o.has("response")) return o.optString("response", "");
-            if (o.has("message"))  return o.optString("message", "");
-            if (o.has("error"))    return "Error: " + o.optString("error", "");
-        } catch (Exception ignore) {}
+            if (o.has("response"))
+                return o.optString("response", "");
+            if (o.has("message"))
+                return o.optString("message", "");
+            if (o.has("error"))
+                return "Error: " + o.optString("error", "");
+        } catch (Exception ignore) {
+        }
         return null;
     }
 
+    /**
+     * Mètode per resetear els botons després de la petició
+     * 
+     */
     private void resetButtons() {
         sendButton.setDisable(false);
         uploadButton.setDisable(false);
@@ -459,49 +509,57 @@ public class Controller implements Initializable {
     }
 
     // Assegurar que el model està carregat
+    /**
+     * Mètode per assegurar que el model està carregat
+     * 
+     * @param modelName
+     * @return CompletableFuture<Void>
+     */
     private CompletableFuture<Void> ensureModelLoaded(String modelName) {
         return httpClient.sendAsync(
                 HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:11434/api/ps"))
-                    .GET()
-                    .build(),
-                HttpResponse.BodyHandlers.ofString()
-            )
-            .thenCompose(resp -> {
-                boolean loaded = false;
-                try {
-                    JSONObject o = new JSONObject(resp.body());
-                    JSONArray models = o.optJSONArray("models");
-                    if (models != null) {
-                        for (int i = 0; i < models.length(); i++) {
-                            String name = models.getJSONObject(i).optString("name", "");
-                            String model = models.getJSONObject(i).optString("model", "");
-                            if (name.startsWith(modelName) || model.startsWith(modelName)) { 
-                                loaded = true; 
-                                break; 
+                        .uri(URI.create("http://localhost:11434/api/ps"))
+                        .GET()
+                        .build(),
+                HttpResponse.BodyHandlers.ofString())
+                .thenCompose(resp -> {
+                    boolean loaded = false;
+                    try {
+                        JSONObject o = new JSONObject(resp.body());
+                        JSONArray models = o.optJSONArray("models");
+                        if (models != null) {
+                            for (int i = 0; i < models.length(); i++) {
+                                String name = models.getJSONObject(i).optString("name", "");
+                                String model = models.getJSONObject(i).optString("model", "");
+                                if (name.startsWith(modelName) || model.startsWith(modelName)) {
+                                    loaded = true;
+                                    break;
+                                }
                             }
                         }
+                    } catch (Exception ignore) {
                     }
-                } catch (Exception ignore) {}
 
-                if (loaded) return CompletableFuture.completedFuture(null);
+                    if (loaded)
+                        return CompletableFuture.completedFuture(null);
 
-                Platform.runLater(() -> updateAIMessage("Carregant model..."));
+                    Platform.runLater(() -> updateAIMessage("Carregant model..."));
 
-                String preloadJson = new JSONObject()
-                    .put("model", modelName)
-                    .put("stream", false)
-                    .put("keep_alive", "10m")
-                    .toString();
+                    String preloadJson = new JSONObject()
+                            .put("model", modelName)
+                            .put("stream", false)
+                            .put("keep_alive", "10m")
+                            .toString();
 
-                HttpRequest preloadReq = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:11434/api/generate"))
-                    .header("Content-Type", "application/json")
-                    .POST(BodyPublishers.ofString(preloadJson))
-                    .build();
+                    HttpRequest preloadReq = HttpRequest.newBuilder()
+                            .uri(URI.create("http://localhost:11434/api/generate"))
+                            .header("Content-Type", "application/json")
+                            .POST(BodyPublishers.ofString(preloadJson))
+                            .build();
 
-                return httpClient.sendAsync(preloadReq, HttpResponse.BodyHandlers.ofString())
-                        .thenAccept(r -> { /* model carregat */ });
-            });
+                    return httpClient.sendAsync(preloadReq, HttpResponse.BodyHandlers.ofString())
+                            .thenAccept(r -> {
+                                /* model carregat */ });
+                });
     }
 }

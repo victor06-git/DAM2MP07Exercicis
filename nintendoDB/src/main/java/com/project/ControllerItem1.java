@@ -50,6 +50,11 @@ public class ControllerItem1 {
         this.index = index;
     }
 
+    /**
+     * Function to navigate to Character view by the arrow click
+     * 
+     * @param event
+     */
     public void toViewCharacter(MouseEvent event) {
         Main.currentObject = index;
         Main.currentJSON = "Characters";

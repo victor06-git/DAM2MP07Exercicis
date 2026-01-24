@@ -6,7 +6,7 @@ import java.util.ResourceBundle;
 
 import org.json.JSONObject;
 
-import com.utils.*;
+import com.utils.UtilsViews;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -90,7 +90,6 @@ public class ControllerCharacter implements Initializable {
     @FXML
     private void toViewMain(MouseEvent event) {
         Main.currentObject = -1;
-
         UtilsViews.setViewAnimating("ViewCharacters");
     }
 

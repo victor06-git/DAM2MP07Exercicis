@@ -44,6 +44,10 @@ public class ControllerSeries implements Initializable {
         loadList();
     }
 
+    /**
+     * Load series list from JSON file
+     * 
+     */
     public void loadList() {
         try {
             Main.currentJSON = "Series";
@@ -54,7 +58,7 @@ public class ControllerSeries implements Initializable {
             JSONArray jsonInfo = new JSONArray(content);
             String pathImages = "/assets/images0601/";
 
-            // Actualizar el estado global
+            // Update global state
             Main.currentObjects.clear();
             for (int i = 0; i < jsonInfo.length(); i++) {
                 Main.currentObjects.add(jsonInfo.getJSONObject(i));

@@ -42,6 +42,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   List<Category> _categories = [];
   bool _loading = true;
   int? _selectedCategory;
+  // Search state
+  bool _isSearching = false;
+  String _searchQuery = '';
+  List<Item> _searchResults = [];
+  bool _searchLoading = false;
 
   @override
   void didChangeDependencies() {
@@ -51,7 +56,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   Future<void> _fetchCategories() async {
     try {
-      final uri = Uri.parse('http://localhost:3000/categories');
+      final uri = Uri.parse('https://vasensiobermudez.ieti.site/categories');
       final resp = await http.get(uri);
       if (resp.statusCode == 200) {
         final List<dynamic> data = jsonDecode(resp.body);
@@ -78,12 +83,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text('Seleccione una categoría:'),
+                  const Text('Selecciona una categoria:'),
                   const SizedBox(height: 8),
                   DropdownButton<int>(
                     isExpanded: true,
                     value: _selectedCategory,
-                    hint: const Text('Elige una categoría'),
+                    hint: const Text('Escull una categoria'),
                     items: _categories
                         .map<DropdownMenuItem<int>>(
                           (c) => DropdownMenuItem<int>(
@@ -106,21 +111,126 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  const Text('O navega por categorías:'),
+                  const Text('O busca items:'),
                   const SizedBox(height: 8),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _categories.length,
-                      itemBuilder: (context, index) {
-                        final cat = _categories[index];
-                        return CategoryListItem(category: cat);
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search),
+                        hintText: 'Cerca items...',
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  setState(() {
+                                    _searchQuery = '';
+                                    _isSearching = false;
+                                    _searchResults = [];
+                                  });
+                                },
+                              )
+                            : null,
+                        border: const OutlineInputBorder(),
+                      ),
+                      onChanged: (v) => setState(() => _searchQuery = v),
+                      onSubmitted: (v) {
+                        final q = v.trim();
+                        if (q.isNotEmpty) {
+                          _performSearch(q);
+                        } else {
+                          setState(() {
+                            _isSearching = false;
+                            _searchResults = [];
+                          });
+                        }
                       },
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: _isSearching
+                        ? _buildSearchResults()
+                        : Center(child: Text('Escriu i prem Enter per cercar')),
                   ),
                 ],
               ),
             ),
     );
+  }
+
+  Widget _buildSearchResults() {
+    if (_searchLoading) return const Center(child: CircularProgressIndicator());
+    if (_searchResults.isEmpty)
+      return const Center(child: Text('No s\'han trobat resultats'));
+    return ListView.builder(
+      itemCount: _searchResults.length,
+      itemBuilder: (context, index) {
+        final item = _searchResults[index];
+        return ListTile(
+          title: Text(item.name),
+          subtitle: Text(item.description),
+          leading: CachedNetworkImage(
+            imageUrl:
+                'https://vasensiobermudez.ieti.site/images/thumbs/${item.image}',
+            width: 56,
+            height: 56,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => const SizedBox(
+              width: 56,
+              height: 56,
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            ),
+            errorWidget: (context, url, error) => const Icon(Icons.movie),
+          ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ItemDetailScreen(item: item)),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _performSearch(String query) async {
+    setState(() {
+      _isSearching = true;
+      _searchLoading = true;
+      _searchResults = [];
+    });
+    try {
+      final uri = Uri.parse('https://vasensiobermudez.ieti.site/search');
+      final resp = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'query': query}),
+      );
+      if (resp.statusCode == 200) {
+        final Map<String, dynamic> decoded = jsonDecode(resp.body);
+        final List<Item> results = (decoded['items'] as List<dynamic>?)
+                ?.map((e) => Item.fromJson(e))
+                .toList() ??
+            [];
+        setState(() {
+          _searchResults = results;
+        });
+      } else {
+        setState(() {
+          _searchResults = [];
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _searchResults = [];
+      });
+    } finally {
+      setState(() {
+        _searchLoading = false;
+      });
+    }
   }
 }
 
@@ -151,6 +261,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
     _fetchItems();
   }
 
+  // Fetch items from server with pagination
   Future<void> _fetchItems() async {
     if (_page == 1) {
       setState(() => _loading = true);
@@ -160,7 +271,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
 
     try {
       final uri = Uri.parse(
-        'http://localhost:3000/items?categoryId=${categoryId}&page=${_page}&pageSize=${_pageSize}',
+        'https://vasensiobermudez.ieti.site/items?categoryId=${categoryId}&page=${_page}&pageSize=${_pageSize}',
       );
       final resp = await http.get(uri);
       if (resp.statusCode == 200) {
@@ -232,7 +343,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                   subtitle: Text(item.description),
                   leading: CachedNetworkImage(
                     imageUrl:
-                        'http://localhost:3000/images/thumbs/${item.image}',
+                        'https://vasensiobermudez.ieti.site/images/thumbs/${item.image}',
                     width: 56,
                     height: 56,
                     fit: BoxFit.cover,
@@ -260,8 +371,6 @@ class _ItemsScreenState extends State<ItemsScreen> {
     );
   }
 }
-
-// Nota: La pantalla de detalle se implementa en `view_item.dart` como `ItemDetailScreen`.
 
 // Parsing heavy work off the UI thread
 List<Item> _parseItemsFromResponse(String body) {

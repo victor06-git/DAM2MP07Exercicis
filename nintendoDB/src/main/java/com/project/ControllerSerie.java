@@ -66,6 +66,9 @@ public class ControllerSerie implements Initializable {
         this.image.setImage(image);
     }
 
+    /**
+     * Display serie data
+     */
     public void showData() {
         if (Main.currentObject == -1 || Main.currentObjects.isEmpty()) {
             return;

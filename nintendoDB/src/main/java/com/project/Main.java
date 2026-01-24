@@ -30,6 +30,12 @@ public class Main extends Application {
         launch(args);
     }
 
+    /**
+     * Start method
+     * 
+     * @param stage
+     * @throws Exception
+     */
     @Override
     public void start(Stage stage) throws Exception {
 
@@ -67,6 +73,11 @@ public class Main extends Application {
         }
     }
 
+    /**
+     * Set layout according to width (mobile/desktop)
+     * 
+     * @param width
+     */
     private void _setLayout(int width) {
 
         if (width < 750) {
@@ -90,6 +101,10 @@ public class Main extends Application {
         }
     }
 
+    /**
+     * Show detail view according to current JSON type
+     * 
+     */
     private void showDetailView() {
 
         if (Main.currentObject == -1 || Main.currentObjects.isEmpty()) {
@@ -125,6 +140,10 @@ public class Main extends Application {
         }
     }
 
+    /**
+     * Show list view according to current JSON type
+     * 
+     */
     private void showListView() {
         switch (currentJSON) {
             case "Characters":

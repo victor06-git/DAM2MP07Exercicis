@@ -8,7 +8,8 @@ class ItemDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = 'http://localhost:3000/images/${item.image}';
+    // Use thumbs path (server stores images under public/images/thumbs)
+    final imageUrl = 'https://vasensiobermudez.ieti.site/images/thumbs/${item.image}';
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(middle: Text(item.name)),
       child: SafeArea(

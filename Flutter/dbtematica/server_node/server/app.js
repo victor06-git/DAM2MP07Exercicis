@@ -3,8 +3,6 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
-const multer = require('multer');
-const { getEnabledCategories } = require('trace_events');
 
 const compression = require('compression');
 const app = express();
@@ -14,33 +12,58 @@ const port = 3000;
 app.use(compression());
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static('public'));
-app.use('/images', express.static(path.join(__dirname, 'data/images')));
-// Servir miniaturas si existen; en caso contrario, devolver la imagen original
+
+// Cargar datos desde JSON
+const dataPath = path.join(__dirname, 'data');
+let categories = [];   
+let items = [];        
+
+try {
+    categories = JSON.parse(fs.readFileSync(path.join(dataPath, 'categories.json'), 'utf8'));
+    items = JSON.parse(fs.readFileSync(path.join(dataPath, 'items.json'), 'utf8'));
+    console.log(`Datos cargados: ${items.length} items y ${categories.length} categorías.`);
+} catch (error) {
+    console.error("Error cargando los archivos JSON de datos:", error.message);
+}
+
+// Serve public static files (public/) and images from public/images
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+
+// GET for image thumbnails
 app.get('/images/thumbs/:imageName', (req, res) => {
     const imageName = req.params.imageName;
-    const thumbPath = path.join(__dirname, 'data/images/thumbs', imageName);
-    const mainPath = path.join(__dirname, 'data/images', imageName);
+    const thumbPath = path.join(__dirname, 'public/images/thumbs', imageName);
+    const mainPath = path.join(__dirname, 'public/images', imageName);
     if (fs.existsSync(thumbPath)) {
         res.sendFile(thumbPath);
     } else if (fs.existsSync(mainPath)) {
-        // Fallback: servir la imagen principal si no hay miniatura
         res.sendFile(mainPath);
     } else {
         res.status(404).send('Not found');
     }
 });
 
-// Cargar datos desde JSON
-const dataPath = path.join(__dirname, 'data');
-const categories = JSON.parse(fs.readFileSync(path.join(dataPath, 'categories.json'), 'utf8'));
-const items = JSON.parse(fs.readFileSync(path.join(dataPath, 'items.json'), 'utf8'));
+// GET /item/:id/image - returns image for item
+app.get('/item/:id/image', (req, res) => {
+    const id = parseInt(req.params.id);
+    const item = items.find(i => i.id === id);
+    if (!item) return res.status(404).send('Item not found');
+    if (!item.image) return res.status(404).send('No image for this item');
+    
+    const imagePath = path.join(__dirname, 'public/images', item.image);
+    if (fs.existsSync(imagePath)) return res.sendFile(imagePath);
+    return res.status(404).send('Image not found');
+});
 
+
+// Getter for categories
 app.get('/categories', (req, res) => {
     res.json(categories);
  });
 
-// GET /items?categoryId=1&page=1&pageSize=20 - devuelve items paginados (opcional)
+// Getter for items
 app.get('/items', (req, res) => {
     const categoryId = req.query.categoryId ? parseInt(req.query.categoryId) : null;
     const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
@@ -61,24 +84,27 @@ app.get('/items', (req, res) => {
         items: paged
     });
 });
-// --- Rutas para la App de Películas ---
 
+
+// POST for categories
 app.post('/categories', (req, res) => {
   res.json(categories);
 });
 
+// POST for items
 app.post('/items', (req, res) => {
   const { categoryId } = req.body;
   if (categoryId) {
-    // Filtrar items por categoryId si se proporciona
+    // Filtrar items by categoryId
     const filteredItems = items.filter(item => item.categoryId === parseInt(categoryId));
     res.json(filteredItems);
   } else {
-    // Devolver todos los items si no hay categoryId
+    // Return all items if there's no categoryId
     res.json(items);
   }
 });
 
+// POST for item
 app.post('/item', (req, res) => {
   const { itemId } = req.body;
   const item = items.find(i => i.id === parseInt(itemId));
@@ -89,61 +115,41 @@ app.post('/item', (req, res) => {
   }
 });
 
-// --- Rutas existentes para subida de archivos (Multer) ---
-
-// Crear la carpeta 'uploads' si no existeix
-if (!fs.existsSync('uploads')) {
-    fs.mkdirSync('uploads');
-}
-
-// Tipus MIME acceptats
-const allowedMimeTypes = ['text/plain', 'image/jpeg', 'image/png', 'application/pdf'];
-
-// Configurar multer per guardar arxius a la carpeta "uploads"
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads');
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname);
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 50 * 1024 * 1024 }, 
-    fileFilter: (req, file, cb) => {
-        if (allowedMimeTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Tipus de fitxer no permès'), false);
+// POST for /search - search items by text
+app.post('/search', (req, res) => {
+        const { query } = req.body;
+        if (!query || typeof query !== 'string') {
+                return res.status(400).json({ error: 'Missing or invalid query' });
         }
-    }
+        const q = query.trim().toLowerCase();
+    // Search only by item name (field `name`)
+    const results = items.filter(it => {
+        const name = (it.name || '').toString().toLowerCase();
+        return name.includes(q);
+    });
+        res.json({ query, total: results.length, items: results });
 });
 
-app.post('/upload', upload.array('files', 10), async (req, res) => {
-    try {
-        const jsonData = JSON.parse(req.body.json);
-        const files = req.files.map(file => ({
-            originalName: file.originalname,
-            mimeType: file.mimetype,
-            size: file.size,
-            path: file.path
-        }));
-        res.json({
-            message: 'Dades rebudes',
-            jsonData: jsonData,
-            files: files
-        });
-    } catch (error) {
-        res.status(400).json({ error: 'Error processant la petició', details: error.message });
-    }
+// GET /item/:id/image - returns image for item
+app.get('/item/:id/image', (req, res) => {
+        const id = parseInt(req.params.id);
+        const item = items.find(i => i.id === id);
+        if (!item) return res.status(404).send('Item not found');
+        if (!item.image) return res.status(404).send('No image for this item');
+        const imagePath = path.join(__dirname, 'public/images', item.image);
+        if (fs.existsSync(imagePath)) return res.sendFile(imagePath);
+        return res.status(404).send('Image not found');
 });
 
-// --- Arranque y parada del servidor ---
+// Si no es una imagen ni un archivo real, enviamos el index.html
+app.get(/(.*)/, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
-const httpServer = app.listen(port, () => {
-    console.log(`Servidor escoltant a http://localhost:${port}`);
+// Run & Stop server
+const httpServer = app.listen(port, '0.0.0.0', () => {
+    console.log(`--- SERVIDOR ARRANCADO ---`);
+    console.log(`Internamente: http://localhost:${port}`);
 });
 
 process.on('SIGTERM', shutDown);
