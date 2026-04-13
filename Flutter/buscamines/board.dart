@@ -7,7 +7,7 @@ class Board {
   final int mineCount;
 
   // Aquí guardaremos las instancias (los objetos reales)
-  // Es una lista de listas de objetos Cell
+  // lISTA DE LISTAS PARA GUARDAR LAS MINAS Y CASILLAS POR ROW
   List<List<Cell>> grid = [];
 
   Board({required this.rows, required this.columns, required this.mineCount}) {
@@ -114,8 +114,7 @@ class Board {
         Cell cell = grid[r][c];
         String char = ".";
 
-        // PRIORITAT DE VISUALITZACIÓ:
-        // 1. Si es demana revelar tot (Game Over o Cheat)
+        // Si es demana revelar tot (Game Over o Cheat)
         if (revealMines) {
           if (cell.isMine)
             char = "*";
@@ -124,18 +123,18 @@ class Board {
           else
             char = " ";
         }
-        // 2. Si té bandera (sempre visible si no està destapada)
+        // Si té bandera (sempre visible si no està destapada)
         else if (cell.isFlagged) {
           char = "#"; // Símbol de bandera
         }
-        // 3. Si està destapada (jugada normal)
+        // Si està destapada (jugada normal)
         else if (cell.isRevealed) {
           if (cell.adjacentMines > 0)
             char = cell.adjacentMines.toString();
           else
             char = " "; // Casella buida (0)
         }
-        // 4. Si no, està tapada (.)
+        // Si no, està tapada (.)
 
         rowStr += "$char ";
       }
@@ -150,9 +149,10 @@ class Board {
 
     Cell cell = grid[r][c];
 
-    if (cell.isRevealed || cell.isFlagged) return;
+    if (cell.isRevealed || cell.isFlagged)
+      return; // SI CELL ES REVELADA O CON BANDERA
 
-    cell.isRevealed = true;
+    cell.isRevealed = true; // CAMBIA EL ESTADO A REVELADO
 
     if (cell.adjacentMines == 0 && !cell.isMine) {
       for (int dr = -1; dr <= 1; dr++) {

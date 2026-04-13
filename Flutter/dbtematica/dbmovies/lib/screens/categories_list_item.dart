@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'models/category.dart';
+import '../models/category.dart';
 
 class CategoryListItem extends StatelessWidget {
   final Category category;

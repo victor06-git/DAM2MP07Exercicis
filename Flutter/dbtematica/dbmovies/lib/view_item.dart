@@ -1,5 +1,7 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'models/item.dart';
+import 'config.dart';
 
 class ItemDetailScreen extends StatelessWidget {
   final Item item;
@@ -8,44 +10,92 @@ class ItemDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use thumbs path (server stores images under public/images/thumbs)
-    final imageUrl = 'https://vasensiobermudez.ieti.site/images/thumbs/${item.image}';
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(middle: Text(item.name)),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Image.network(
-                  imageUrl,
-                  width: double.infinity,
-                  height: 240,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) =>
-                      const Icon(CupertinoIcons.photo, size: 120),
+    // Prefer direct image URL under /images; fallback to /item/:id/image then to thumbnail
+    final mainImage = '$baseUrl/images/${item.image}';
+    final apiImage = '$baseUrl/item/${item.id}/image';
+    return Scaffold(
+      appBar: AppBar(title: Text(item.name)),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Expandable & zoomable image
+            Expanded(
+              child: Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Hero(
+                    tag: 'item-image-${item.id}',
+                    child: InteractiveViewer(
+                      panEnabled: true,
+                      minScale: 0.5,
+                      maxScale: 4.0,
+                      child: CachedNetworkImage(
+                        // Try the main image first; if it fails the errorWidget will try the API image or thumbnail
+                        imageUrl: mainImage,
+                        fit: BoxFit.contain,
+                        width: double.infinity,
+                        placeholder: (context, url) =>
+                            const Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) =>
+                            CachedNetworkImage(
+                          imageUrl: apiImage,
+                          fit: BoxFit.contain,
+                          width: double.infinity,
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) => Image.network(
+                            '$baseUrl/images/thumbs/${item.image}',
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) =>
+                                const Icon(Icons.broken_image, size: 120),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                item.name,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+            ),
+            // Info card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              child: Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.name,
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text(item.description,
+                          style:
+                              TextStyle(fontSize: 16, color: Colors.grey[700])),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton.icon(
+                              onPressed: () {
+                                // Open original image in browser or share; placeholder action
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('Imatge original')));
+                              },
+                              icon: const Icon(Icons.open_in_new),
+                              label: const Text('Obrir')),
+                        ],
+                      )
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                item.description,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: CupertinoColors.inactiveGray,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

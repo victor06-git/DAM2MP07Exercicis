@@ -7,7 +7,7 @@ void main() {
 
   // Bucle PRINCIPAL de la aplicación (para poder reiniciar)
   while (true) {
-    // 1. Inicialización de la partida (Reset de variables)
+    // Inicialización de la partida (Reset de variables)
     Board myBoard = Board(rows: 6, columns: 10, mineCount: 8);
     bool cheatMode = false;
     int tirades = 0;
@@ -23,7 +23,7 @@ void main() {
       myBoard.printBoard(revealMines: cheatMode);
 
       print(
-        "Escriu 'A0' per destapar, 'A0 flag' | 'A0 bandera' per bandera/treure bandera, 'exit' per sortir.",
+        "Escriu 'A0' per destapar, 'A0 flag' | 'A0 bandera' per bandera/treure bandera, cheat | trampes per mostrar els trucs, 'exit' per sortir.",
       );
       stdout.write('> ');
       String? input = stdin.readLineSync();
@@ -34,7 +34,7 @@ void main() {
         return; // Sale del main() completo
       }
 
-      // Trucos
+      // Trucs
       if (input.trim().toLowerCase() == 'cheat' ||
           input.trim().toLowerCase() == 'trampes') {
         cheatMode = !cheatMode;
@@ -42,9 +42,9 @@ void main() {
         continue;
       }
 
-      // Normalización del input
+      // Input to UpperCase
       input = input.toUpperCase().trim();
-      bool isFlagAction = false;
+      bool isFlagAction = false; // Es posa una bandera o si és es treu
 
       // Lógica de detección de bandera (Corregida para mayúsculas)
       if (input.endsWith('FLAG')) {
@@ -57,15 +57,15 @@ void main() {
 
       if (input.length < 2) continue;
 
-      int r = input.codeUnitAt(0) - 'A'.codeUnitAt(0);
-      int c = int.tryParse(input.substring(1)) ?? -1;
+      int r = input.codeUnitAt(0) - 'A'.codeUnitAt(0); // ROW
+      int c = int.tryParse(input.substring(1)) ?? -1; // COLUMN
 
       // Validar coordenadas
       if (r >= 0 && r < myBoard.rows && c >= 0 && c < myBoard.columns) {
-        Cell target = myBoard.grid[r][c];
+        Cell target = myBoard.grid[r][c]; // CURRENT CELL
 
         if (isFlagAction) {
-          // --- ACCIÓN DE BANDERA ---
+          // ACCIÓN REVISAR PONE O ELIMINA UNA CELDA
           bool success = myBoard.toggleFlag(r, c);
           if (success) {
             print(
@@ -76,7 +76,7 @@ void main() {
 
             // Verificar si el jugador ha ganado
             if (myBoard.checkWin()) {
-              print("\n🎉 FELICITATS! Has guanyat!");
+              print("\nFELICITATS! Has guanyat!");
               print("-----------------------------------");
               myBoard.printBoard(revealMines: true);
               print("-----------------------------------");
@@ -88,9 +88,11 @@ void main() {
             print("No pots posar bandera en una casella destapada.");
           }
         } else {
-          // --- ACCIÓN DE DESTAPAR ---
+          // --- ACCIÓ DE DESTAPAR ---
           if (target.isFlagged) {
-            print("Hi ha una bandera! Treu-la primer ('$input flag').");
+            print(
+              "Hi ha una bandera! Treu-la primer ('$input flag / $input bandera').",
+            );
           } else if (target.isRevealed) {
             print("Ja està destapada.");
           } else {
@@ -105,7 +107,7 @@ void main() {
               print("Joc acabat.");
               print("Total de tirades realitzades: $tirades");
 
-              playing = false; // Rompemos el bucle interno
+              playing = false; // ROMPE EL BUCLE
             } else {
               myBoard.revealCell(r, c);
               print("Casella segura.");
@@ -117,13 +119,13 @@ void main() {
       }
     } // Fin del while (playing)
 
-    // 2. Preguntar si quiere volver a jugar
+    // Preguntar si quiere volver a jugar
     stdout.write("\nVols tornar a jugar? (S/N): ");
     String? retry = stdin.readLineSync();
     if (retry == null || retry.toUpperCase() != 'S') {
       print("Gràcies per jugar. Adéu!");
       break; // Rompe el bucle while(true) principal
     }
-    // Si dice 'S', el bucle principal se repite y crea un nuevo Board
+    // Si escribe 'S', el bucle principal se repite y crea un nuevo Board
   }
 }
