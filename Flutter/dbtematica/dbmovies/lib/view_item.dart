@@ -10,7 +10,6 @@ class ItemDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Prefer direct image URL under /images; fallback to /item/:id/image then to thumbnail
     final mainImage = '$baseUrl/images/${item.image}';
     final apiImage = '$baseUrl/item/${item.id}/image';
     return Scaffold(
