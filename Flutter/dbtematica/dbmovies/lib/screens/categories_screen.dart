@@ -178,69 +178,203 @@ class CategoriesScreenState extends State<CategoriesScreen> {
                   if (_isSearching)
                     Expanded(child: _buildSearchResults())
                   else
-                    // Categories grid
+                    // Responsive categories area
                     Expanded(
-                      child: GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                childAspectRatio: 3 / 2,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12),
-                        itemCount: _categories.length,
-                        itemBuilder: (context, index) {
-                          final c = _categories[index];
-                          final colors = [
-                            Colors.indigo,
-                            Colors.deepPurple,
-                            Colors.teal,
-                            Colors.orange,
-                            Colors.pink
-                          ];
-                          final color = colors[c.id % colors.length];
-                          return Card(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  '/items',
-                                  arguments: {'id': c.id, 'name': c.name},
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  gradient: LinearGradient(
-                                      colors: [color.shade700, color.shade300],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(c.name,
-                                        style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold)),
-                                    const Align(
-                                      alignment: Alignment.bottomRight,
-                                      child: Icon(Icons.chevron_right,
-                                          color: Colors.white),
-                                    )
-                                  ],
+                      child: LayoutBuilder(builder: (context, constraints) {
+                        final w = constraints.maxWidth;
+                        if (w > 1024) {
+                          final crossCount = (w / 250).floor().clamp(3, 6);
+                          return Row(
+                            children: [
+                              // Left quick list for navigation
+                              SizedBox(
+                                width: 260,
+                                child: ListView.builder(
+                                  itemCount: _categories.length,
+                                  itemBuilder: (ctx, i) {
+                                    final c = _categories[i];
+                                    return ListTile(
+                                      title: Text(c.name),
+                                      onTap: () => Navigator.pushNamed(
+                                        context,
+                                        '/items',
+                                        arguments: {'id': c.id, 'name': c.name},
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
-                            ),
+                              Expanded(
+                                child: GridView.builder(
+                                  padding: const EdgeInsets.all(12),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: crossCount,
+                                          childAspectRatio: 3 / 2,
+                                          crossAxisSpacing: 12,
+                                          mainAxisSpacing: 12),
+                                  itemCount: _categories.length,
+                                  itemBuilder: (context, index) {
+                                    final c = _categories[index];
+                                    final colors = [
+                                      Colors.indigo,
+                                      Colors.deepPurple,
+                                      Colors.teal,
+                                      Colors.orange,
+                                      Colors.pink
+                                    ];
+                                    final color = colors[c.id % colors.length];
+                                    return Card(
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12)),
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(12),
+                                        onTap: () {
+                                          Navigator.pushNamed(
+                                            context,
+                                            '/items',
+                                            arguments: {
+                                              'id': c.id,
+                                              'name': c.name
+                                            },
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            gradient: LinearGradient(
+                                                colors: [
+                                                  color.shade700,
+                                                  color.shade300
+                                                ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(c.name,
+                                                  style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                              const Align(
+                                                alignment:
+                                                    Alignment.bottomRight,
+                                                child: Icon(Icons.chevron_right,
+                                                    color: Colors.white),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           );
-                        },
-                      ),
+                        } else if (w > 600) {
+                          final cross = (w / 300).floor().clamp(2, 3);
+                          return GridView.builder(
+                            padding: const EdgeInsets.all(12),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: cross,
+                                    childAspectRatio: 3 / 2,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12),
+                            itemCount: _categories.length,
+                            itemBuilder: (context, index) {
+                              final c = _categories[index];
+                              final colors = [
+                                Colors.indigo,
+                                Colors.deepPurple,
+                                Colors.teal,
+                                Colors.orange,
+                                Colors.pink
+                              ];
+                              final color = colors[c.id % colors.length];
+                              return Card(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/items',
+                                      arguments: {'id': c.id, 'name': c.name},
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      gradient: LinearGradient(
+                                          colors: [
+                                            color.shade700,
+                                            color.shade300
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(c.name,
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold)),
+                                        const Align(
+                                          alignment: Alignment.bottomRight,
+                                          child: Icon(Icons.chevron_right,
+                                              color: Colors.white),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        } else {
+                          // Mobile: simple list
+                          return ListView.builder(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            itemCount: _categories.length,
+                            itemBuilder: (ctx, i) {
+                              final c = _categories[i];
+                              return Card(
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                child: ListTile(
+                                  title: Text(c.name),
+                                  trailing: const Icon(Icons.chevron_right),
+                                  onTap: () => Navigator.pushNamed(
+                                    context,
+                                    '/items',
+                                    arguments: {'id': c.id, 'name': c.name},
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        }
+                      }),
                     ),
                 ],
               ),
