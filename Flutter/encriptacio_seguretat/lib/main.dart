@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// Importa tu nuevo archivo aquí:
 import 'encryption_form.dart';
 
 void main() => runApp(const CryptoApp());
@@ -10,36 +9,52 @@ class CryptoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Quita la banda roja de "Debug"
-      theme: ThemeData(primarySwatch: Colors.blue),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const MainScreen(),
     );
   }
 }
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
   @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Exercici 09 - Criptografía'),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Encriptar'),
-              Tab(text: 'Desencriptar'),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Encriptació i Seguretat'),
+        centerTitle: true,
+        elevation: 2,
+      ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: const [
+          EncryptionForm(isEncrypting: true),
+          EncryptionForm(isEncrypting: false),
+        ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (int index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.lock), label: 'Encriptar'),
+          NavigationDestination(
+            icon: Icon(Icons.lock_open),
+            label: 'Desencriptar',
           ),
-        ),
-        body: const TabBarView(
-          children: [
-            EncryptionForm(isEncrypting: true),
-            EncryptionForm(isEncrypting: false),
-          ],
-        ),
+        ],
       ),
     );
   }

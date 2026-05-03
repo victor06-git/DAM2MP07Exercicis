@@ -1,16 +1,91 @@
-# encriptacio_seguretat
+# Encriptació i Seguretat
 
-A new Flutter project.
+Aplicació Flutter per a encriptar i desencriptar arxius de manera segura usant **criptografia RSA** de clau pública/privada.
 
-## Getting Started
+## 🎯 Funcionalitats Principals
 
-This project is a starting point for a Flutter application.
+- **Encriptar Arxius**: Usa una clau pública RSA per protegir els teus arxius
+- **Desencriptar Arxius**: Recupera els arxius originals amb la clau privada
+- **Xifratge Híbrid**: Combina RSA per a claus i AES-256 per a contingut
+- **Interfície Intuïtiva**: Navegador de fitxers integrat i interfície clara
 
-A few resources to get you started if this is your first Flutter project:
+## 🚀 Inici Ràpid
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Requisits
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Flutter 3.10.7+
+- Dart 3.10.7+
+
+### Instal·lació de Dependències
+
+```bash
+flutter pub get
+```
+
+### Execució en Desenvolupament
+
+```bash
+flutter run
+```
+
+## 📦 Compilació per a Distribució
+
+### Linux
+
+```bash
+flutter build linux --release
+# Executable: build/linux/x64/release/bundle/encriptacio_seguretat
+```
+
+### Windows
+
+```bash
+flutter build windows --release
+# Executable: build/windows/runner/Release/encriptacio_seguretat.exe
+```
+
+### macOS
+
+```bash
+flutter build macos --release
+# App: build/macos/Build/Products/Release/encriptacio_seguretat.app
+```
+
+## 📖 Documentació Completa
+
+Consulta [USAGE.md](USAGE.md) per a:
+
+- Instruccions detallades d'ús
+- Com generar claus RSA
+- Descripció tècnica del format
+- Resolució de problemes
+- Consideracions de seguretat
+
+## 🔒 Seguretat
+
+- **RSA 4096-bit** per a xifratge de claus de sessió
+- **AES-256-CBC** per a xifratge de contingut
+- Claus aleatòries generades per a cada encriptació
+- No es guarden claus en memòria innecessàriament
+
+## 🏗️ Estructura del Projecte
+
+```text
+lib/
+├── main.dart              # Punt d'entrada i navegació
+├── encryption_form.dart   # Interfície gràfica
+└── crypto_service.dart    # Lògica de criptografia
+```
+
+## 📚 Tecnologies
+
+- **Flutter**: Framework per a interfície gràfica
+- **Dart**: Llenguatge de programació
+- **encrypt**: Biblioteca de criptografia
+- **file_picker**: Selector de fitxers
+- **pointycastle**: Primitives criptogràfiques
+
+## ⚖️ Llicència
+
+Exercici 09 - DAM2MP07 - Albert Palacios Jiménez, 2024
+
