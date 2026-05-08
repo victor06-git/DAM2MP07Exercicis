@@ -80,7 +80,10 @@ class SSHService {
     }
   }
 
-  Future<OperationResult> uploadFile(String localPath, String remotePath) async {
+  Future<OperationResult> uploadFile(
+    String localPath,
+    String remotePath,
+  ) async {
     if (_client == null) {
       return const OperationResult(
         success: false,
@@ -93,11 +96,22 @@ class SSHService {
       final localFile = File(localPath);
       final fileName = p.basename(localPath);
       final remoteFilePath = p.posix.join(targetDirectory, fileName);
+
+      // Create parent directories if they don't exist
+      try {
+        await _sftp!.stat(targetDirectory);
+      } catch (e) {
+        // Directory might not exist, try to create it
+        await _client!.execute('mkdir -p "$targetDirectory"');
+      }
+
       final remoteFile = await _sftp!.open(
         remoteFilePath,
         mode: SftpFileOpenMode.create | SftpFileOpenMode.write,
       );
-      final stream = localFile.openRead().map((list) => Uint8List.fromList(list));
+      final stream = localFile.openRead().map(
+        (list) => Uint8List.fromList(list),
+      );
       await remoteFile.write(stream);
       logger.i('Uploaded $remoteFilePath');
     }
@@ -111,26 +125,55 @@ class SSHService {
     } catch (e) {
       logger.e('Upload error: $e');
       final message = e.toString();
-      if (!message.contains('Permission denied')) {
-        _sftp = null;
-        return OperationResult(success: false, message: 'Upload failed: $message');
+
+      // Try fallback: upload to home directory
+      try {
+        final homeDir = await getHomeDirectory();
+        if (homeDir != remotePath) {
+          logger.i('Trying fallback upload to home directory: $homeDir');
+          await uploadToPath(homeDir);
+          return OperationResult(
+            success: true,
+            message:
+                'No write permission in "$remotePath". Uploaded to home directory instead.',
+          );
+        }
+      } catch (fallbackError) {
+        logger.e('Fallback upload error: $fallbackError');
       }
 
-      try {
-        await uploadToPath('~');
-        return const OperationResult(
-          success: true,
-          message:
-              'No write permission in selected folder. Uploaded to your home directory (~) instead.',
-        );
-      } catch (fallbackError) {
-        return OperationResult(
-          success: false,
-          message:
-              'Permission denied in destination and fallback (~) also failed: $fallbackError',
-        );
-      }
+      return OperationResult(
+        success: false,
+        message: 'Upload failed: $message',
+      );
     }
+  }
+
+  Future<String> getHomeDirectory() async {
+    if (_client == null) throw Exception('Not connected');
+
+    try {
+      _sftp ??= await _client!.sftp();
+      // Try to get home directory from pwd command
+      final session = await _client!.execute('pwd');
+      final homeDir = utf8
+          .decode(
+            await session.stdout.fold(
+              <int>[],
+              (previous, element) => previous..addAll(element),
+            ),
+          )
+          .trim();
+
+      if (homeDir.isNotEmpty) {
+        return homeDir;
+      }
+    } catch (e) {
+      logger.e('Error getting home directory: $e');
+    }
+
+    // Fallback
+    return '/tmp';
   }
 
   Future<OperationResult> uploadDirectoryAsZipAndExtract(
@@ -348,7 +391,10 @@ class SSHService {
     );
   }
 
-  Future<DiskUsageNode> getDiskUsageTree(String rootPath, {int maxDepth = 2}) async {
+  Future<DiskUsageNode> getDiskUsageTree(
+    String rootPath, {
+    int maxDepth = 2,
+  }) async {
     final escaped = rootPath.replaceAll('"', r'\"');
     final output = await executeCommandOutput(
       'du -k -d $maxDepth "$escaped" 2>/dev/null',
@@ -370,7 +416,9 @@ class SSHService {
     }
 
     if (!sizes.containsKey(rootPath)) {
-      sizes[rootPath] = sizes.values.isEmpty ? 0 : sizes.values.reduce((a, b) => a > b ? a : b);
+      sizes[rootPath] = sizes.values.isEmpty
+          ? 0
+          : sizes.values.reduce((a, b) => a > b ? a : b);
     }
 
     DiskUsageNode buildNode(String path) {

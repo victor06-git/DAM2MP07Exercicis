@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'encryption_form.dart';
 
+// Punt d'entrada de l'app
 void main() => runApp(const CryptoApp());
 
+// Widget arrel de l'aplicació
 class CryptoApp extends StatelessWidget {
   const CryptoApp({super.key});
 
@@ -16,6 +18,7 @@ class CryptoApp extends StatelessWidget {
   }
 }
 
+// Pantalla principal amb navegació inferior entre les dues pestanyes
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -24,7 +27,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 0; // 0 = Encriptar, 1 = Desencriptar
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +37,8 @@ class _MainScreenState extends State<MainScreen> {
         centerTitle: true,
         elevation: 2,
       ),
+      // IndexedStack manté els dos formularis en memòria i només mostra l'actiu.
+      // Això evita que es perdi l'estat (camps omplerts) en canviar de pestanya.
       body: IndexedStack(
         index: _selectedIndex,
         children: const [

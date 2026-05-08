@@ -3,6 +3,10 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'crypto_service.dart';
 
+// Formulari reutilitzable per encriptar i desencriptar arxius.
+// El comportament canvia segons el paràmetre isEncrypting:
+//   true  → mostra camps per clau pública + arxiu a xifrar
+//   false → mostra camps per clau privada + arxiu xifrat + destinació
 class EncryptionForm extends StatefulWidget {
   final bool isEncrypting;
   const EncryptionForm({super.key, required this.isEncrypting});
@@ -12,22 +16,26 @@ class EncryptionForm extends StatefulWidget {
 }
 
 class _EncryptionFormState extends State<EncryptionForm> {
-  String? _keyPath;
-  String? _filePath;
-  String? _destinationPath;
-  bool _isProcessing = false;
-  double _progressValue = 0.0;
+  String? _keyPath; // ruta de la clau (pública o privada)
+  String? _filePath; // ruta de l'arxiu a processar
+  String? _destinationPath; // ruta de destí (només per desencriptar)
+  bool _isProcessing = false; // true mentre s'executa l'operació
+  double _progressValue = 0.0; // valor de la barra de progress (0.0 - 1.0)
 
   @override
   void initState() {
     super.initState();
-    // Valor por defecto para desencriptar
+    // Per defecte, en mode desencriptar, usa la clau SSH privada de l'usuari
     if (!widget.isEncrypting) {
       String homeDir = Platform.environment['HOME'] ?? '';
-      _keyPath = '$homeDir/.ssh/id_rsa';
+      _keyPath = '$homeDir/private_key.pem';
     }
   }
 
+  // Obre el selector de fitxers i guarda la ruta segons el tipus:
+  //   'key'  → clau RSA
+  //   'file' → arxiu a processar
+  //   'dest' → arxiu de destinació
   Future<void> _pickFile(String type) async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles();
@@ -49,6 +57,8 @@ class _EncryptionFormState extends State<EncryptionForm> {
     }
   }
 
+  // Obre el selector de directoris i construeix la ruta completa
+  // afegint el nom de fitxer per defecte (sense extensió .enc)
   Future<void> _pickDirectory() async {
     try {
       String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
@@ -66,6 +76,8 @@ class _EncryptionFormState extends State<EncryptionForm> {
     }
   }
 
+  // Genera el nom de fitxer per defecte per a l'arxiu desxifrat:
+  // si l'arxiu acaba en .enc, elimina l'extensió; sinó afegeix _desxifrat
   String _getDefaultFileName() {
     if (_filePath == null) return 'archivo_desxifrat';
     String originalName = _filePath!.split('/').last;
@@ -223,36 +235,13 @@ class _EncryptionFormState extends State<EncryptionForm> {
             ),
 
             const SizedBox(height: 20),
-
-            // Información adicional
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.amber.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.amber.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info, color: Colors.amber.shade700, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      widget.isEncrypting
-                          ? 'Usa una clau pública (.pem o .pub). Si és .pub, l\'app mostrarà com convertir-la.'
-                          : 'Per defecte usa ~/.ssh/id_rsa. Usa format .pem o .key',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
     );
   }
 
+  // Comprova si tots els camps obligatoris estan omplerts per habilitar el botó
   bool _canProcess() {
     if (widget.isEncrypting) {
       return _keyPath != null &&
@@ -269,6 +258,7 @@ class _EncryptionFormState extends State<EncryptionForm> {
     }
   }
 
+  // Executa l'acció principal: crida encryptFile o decryptFile segons el mode
   void _handleAction() async {
     if (!_canProcess()) {
       _showError('Si us plau, completa tots els camps');
@@ -310,6 +300,7 @@ class _EncryptionFormState extends State<EncryptionForm> {
     }
   }
 
+  // Mostra un SnackBar vermell amb el missatge d'error
   void _showError(String message) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -328,6 +319,7 @@ class _EncryptionFormState extends State<EncryptionForm> {
     }
   }
 
+  // Mostra un diàleg verd de confirmació amb la ruta de l'arxiu resultant
   void _showSuccess(String title, String message) {
     if (mounted) {
       showDialog(
@@ -351,6 +343,9 @@ class _EncryptionFormState extends State<EncryptionForm> {
     }
   }
 
+  // Widget reutilitzable per seleccionar fitxers o directoris.
+  // Mostra la ruta seleccionada (truncada si és massa llarga) i un botó "Navega..."
+  // Canvia de color (gris → verd) quan hi ha un fitxer seleccionat.
   Widget _buildFileSelector({
     required String label,
     String? currentPath,

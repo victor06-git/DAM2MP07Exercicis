@@ -8,6 +8,7 @@ import '../widgets/labeled_edit_field.dart';
 import '../widgets/proxmox_panel.dart';
 import '../widgets/server_card.dart';
 import 'file_explorer_page.dart';
+import 'services_page.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -106,10 +107,9 @@ class _MyHomePageState extends State<MyHomePage> {
     ServerInfo server;
     if (_currentServerId == null) {
       final current = widget.appState.servers;
-      final newId =
-          current.isEmpty
-              ? 1
-              : current.map((e) => e.id).reduce((a, b) => a > b ? a : b) + 1;
+      final newId = current.isEmpty
+          ? 1
+          : current.map((e) => e.id).reduce((a, b) => a > b ? a : b) + 1;
       server = ServerInfo(
         id: newId,
         name: _servernameController.text.trim(),
@@ -210,9 +210,15 @@ class _MyHomePageState extends State<MyHomePage> {
                         controller: _userController,
                       ),
                       const SizedBox(height: 12),
-                      LabeledEditField(label: 'Host', controller: _hostController),
+                      LabeledEditField(
+                        label: 'Host',
+                        controller: _hostController,
+                      ),
                       const SizedBox(height: 12),
-                      LabeledEditField(label: 'Port', controller: _portController),
+                      LabeledEditField(
+                        label: 'Port',
+                        controller: _portController,
+                      ),
                       const SizedBox(height: 12),
                       LabeledEditField(
                         label: 'SSH Key',
@@ -238,25 +244,30 @@ class _MyHomePageState extends State<MyHomePage> {
                                 label: const Text('Connect'),
                                 onPressed: () async {
                                   final navigator = Navigator.of(context);
-                                  final messenger = ScaffoldMessenger.of(context);
-                                  final success = await widget.sshService.connect(
-                                    _userController.text,
-                                    _hostController.text,
-                                    int.tryParse(_portController.text) ?? 22,
-                                    _keyController.text,
+                                  final messenger = ScaffoldMessenger.of(
+                                    context,
                                   );
+                                  final success = await widget.sshService
+                                      .connect(
+                                        _userController.text,
+                                        _hostController.text,
+                                        int.tryParse(_portController.text) ??
+                                            22,
+                                        _keyController.text,
+                                      );
                                   if (!context.mounted) return;
                                   if (success) {
-                                    await widget.sshService.listFiles(
-                                      widget.appState.currentPath,
-                                    );
+                                    // Get home directory
+                                    final homeDir = await widget.sshService
+                                        .getHomeDirectory();
+                                    widget.appState.setCurrentPath(homeDir);
+                                    await widget.sshService.listFiles(homeDir);
                                     navigator.push(
                                       MaterialPageRoute(
-                                        builder:
-                                            (_) => FileExplorerPage(
-                                              appState: widget.appState,
-                                              sshService: widget.sshService,
-                                            ),
+                                        builder: (_) => FileExplorerPage(
+                                          appState: widget.appState,
+                                          sshService: widget.sshService,
+                                        ),
                                       ),
                                     );
                                   } else {
@@ -271,17 +282,43 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                             const SizedBox(width: 8),
                             ElevatedButton.icon(
-                              icon: const Icon(Icons.widgets),
-                              label: const Text('Proxmox Panel'),
-                              onPressed:
-                                  () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const ProxmoxPanel(),
+                              icon: const Icon(Icons.settings_input_composite),
+                              label: const Text('Services'),
+                              onPressed: () {
+                                if (!widget.appState.isConnected) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Please connect first'),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ServicesPage(
+                                      appState: widget.appState,
+                                      sshService: widget.sshService,
                                     ),
                                   ),
+                                );
+                              },
                             ),
                           ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.widgets),
+                          label: const Text('Proxmox Panel'),
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ProxmoxPanel(),
+                            ),
+                          ),
                         ),
                       ),
                     ],

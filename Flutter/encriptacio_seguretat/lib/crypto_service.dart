@@ -3,8 +3,12 @@ import 'dart:typed_data';
 import 'package:encrypt/encrypt.dart';
 import 'package:pointycastle/asymmetric/api.dart';
 
+// Servei encarregat de tota la lògica criptogràfica de l'app.
+// Usa encriptació híbrida: AES-256 per al contingut + RSA per a la clau AES.
+// Això permet xifrar arxius de qualsevol mida (RSA sol té límit de bytes).
 class CryptoService {
-  /// Intenta processar una clau SSH .pub i retorna instruccions
+  // Comprova si el fitxer és una clau SSH .pub (format no compatible).
+  // Si ho és, llança un error amb instruccions per convertir-la a PEM.
   static Future<String> _processSSHPublicKey(String filePath) async {
     final contents = await File(filePath).readAsString();
 
@@ -22,7 +26,8 @@ class CryptoService {
     return contents;
   }
 
-  /// Valida que una clau privada sigui en format PEM
+  // Valida que la clau privada sigui en format PEM compatible (RSA o PKCS#8).
+  // Rebutja claus SSH privades (OpenSSH) i formats no reconeguts.
   static Future<String> _validatePrivateKey(String filePath) async {
     final contents = await File(filePath).readAsString();
     final trimmed = contents.trim();
@@ -55,10 +60,11 @@ class CryptoService {
     return contents;
   }
 
-  // Lógica para Encriptar (Híbrido: AES para el archivo + RSA para la clave)
+  // Encripta un arxiu usant el sistema híbrid RSA + AES.
+  // Resultat: arxiu original + extensió .enc
   static Future<void> encryptFile(String filePath, String publicKeyPath) async {
     try {
-      // Verificar que els arxius existeixen
+      // Verificar que els arxius existeixen abans de continuar
       if (!File(filePath).existsSync()) {
         throw 'L\'arxiu a encriptar no existeix: $filePath';
       }
@@ -66,59 +72,64 @@ class CryptoService {
         throw 'La clau pública no existeix: $publicKeyPath';
       }
 
-      // Intentar processar si és SSH
+      // Llegeix i valida la clau pública (detecta si és SSH i avisa)
       String contents = await _processSSHPublicKey(publicKeyPath);
 
-      // 1. Cargar clave RSA
+      // 1. Parseja la clau pública RSA des del contingut PEM
       final parser = RSAKeyParser();
       final RSAPublicKey publicKey;
-
       try {
         publicKey = parser.parse(contents) as RSAPublicKey;
       } catch (e) {
         throw 'Error al llegir la clau pública RSA.\n$e';
       }
-
       final rsaEncrypter = Encrypter(RSA(publicKey: publicKey));
 
-      // 2. Generar clave AES aleatoria (32 bytes para AES-256)
+      // 2. Genera una clau AES aleatòria de 256 bits (32 bytes) i un IV de 128 bits (16 bytes).
+      //    Cada encriptació usa claus diferents → més seguretat.
       final aesKey = Key.fromSecureRandom(32);
       final aesIv = IV.fromSecureRandom(16);
       final aesEncrypter = Encrypter(AES(aesKey));
 
-      // 3. Cifrar el archivo con AES
+      // 3. Xifra el contingut de l'arxiu amb AES-256
+      //    AES pot xifrar arxius de qualsevol mida, RSA no.
       final fileData = await File(filePath).readAsBytes();
       final encryptedFile = aesEncrypter.encryptBytes(fileData, iv: aesIv);
 
-      // 4. Cifrar la clave AES con RSA (esto sí cabe en RSA)
+      // 4. Xifra la clau AES amb RSA (la clau AES és petita, cabe en RSA)
+      //    Només qui tingui la clau privada podrà recuperar la clau AES.
       final encryptedAesKey = rsaEncrypter.encryptBytes(aesKey.bytes);
 
-      // 5. Guardar todo en un solo archivo: [longitud_clave(2B)][clave_rsa][iv][contenido_aes]
+      // 5. Construeix l'arxiu final amb tot concatenat:
+      //    [ 2 bytes: longitud clau RSA ] [ clau AES xifrada ] [ IV 16B ] [ contingut AES ]
+      //    Els 2 primers bytes (big-endian) indiquen quants bytes ocupa la clau xifrada,
+      //    necessari per saber on acaba la clau i on comença l'IV al desxifrar.
       final result = BytesBuilder();
-      
-      // Guardar longitud en 2 bytes (big-endian) para soportar claves RSA 4096-bit (~512 bytes)
       int keyLength = encryptedAesKey.bytes.length;
-      result.addByte((keyLength >> 8) & 0xFF);  // byte superior
-      result.addByte(keyLength & 0xFF);        // byte inferior
-      
-      result.add(encryptedAesKey.bytes);
-      result.add(aesIv.bytes);
-      result.add(encryptedFile.bytes);
+      result.addByte(
+        (keyLength >> 8) & 0xFF,
+      ); // byte superior (més significatiu)
+      result.addByte(keyLength & 0xFF); // byte inferior (menys significatiu)
+      result.add(encryptedAesKey.bytes); // clau AES xifrada amb RSA
+      result.add(aesIv.bytes); // IV necessari per desxifrar AES
+      result.add(encryptedFile.bytes); // contingut de l'arxiu xifrat amb AES
 
+      // Guarda l'arxiu resultant amb extensió .enc
       await File('$filePath.enc').writeAsBytes(result.toBytes());
     } catch (e) {
       throw 'Error encriptant l\'arxiu: $e';
     }
   }
 
-  // Lógica para Desencriptar
+  // Desxifra un arxiu .enc generat per encryptFile.
+  // Necessita la clau privada RSA corresponent a la pública usada per xifrar.
   static Future<void> decryptFile(
     String encryptedPath,
     String privateKeyPath,
     String destinationPath,
   ) async {
     try {
-      // Verificar que els arxius existeixen
+      // Verificar que els arxius existeixen abans de continuar
       if (!File(encryptedPath).existsSync()) {
         throw 'L\'arxiu encriptat no existeix: $encryptedPath';
       }
@@ -126,44 +137,48 @@ class CryptoService {
         throw 'La clau privada no existeix: $privateKeyPath';
       }
 
-      // Validar que la clau privada és en format PEM
+      // Valida i llegeix la clau privada en format PEM
       final contents = await _validatePrivateKey(privateKeyPath);
 
+      // Parseja la clau privada RSA
       final parser = RSAKeyParser();
       final RSAPrivateKey privateKey;
-
       try {
         privateKey = parser.parse(contents) as RSAPrivateKey;
       } catch (e) {
         throw 'Error al llegir la clau privada RSA.\n$e';
       }
-
       final rsaEncrypter = Encrypter(RSA(privateKey: privateKey));
 
+      // Llegeix tots els bytes de l'arxiu xifrat
       final allData = await File(encryptedPath).readAsBytes();
 
-      // 1. Extraer la clave AES cifrada (longitud en 2 bytes, big-endian)
+      // 1. Llegeix els 2 primers bytes per saber la longitud de la clau AES xifrada
+      //    (big-endian: byte[0] és el més significatiu)
       int keyLength = ((allData[0] & 0xFF) << 8) | (allData[1] & 0xFF);
       final encryptedAesKey = allData.sublist(2, 2 + keyLength);
 
-      // 2. Desencriptar la clave AES con RSA
+      // 2. Desxifra la clau AES usant la clau privada RSA
+      //    Només la clau privada correcta pot recuperar la clau AES original
       final decryptedAesKeyBytes = rsaEncrypter.decryptBytes(
         Encrypted(encryptedAesKey),
       );
       final aesKey = Key(Uint8List.fromList(decryptedAesKeyBytes));
 
-      // 3. Extraer el IV y el contenido del archivo
-      final iv = IV(allData.sublist(2 + keyLength, 2 + keyLength + 16));
+      // 3. Extreu l'IV (16 bytes just després de la clau) i el contingut xifrat
+      final iv = IV(
+        allData.sublist(2 + keyLength, 2 + keyLength + 16),
+      ); // Initialization Vector
       final encryptedFileContent = allData.sublist(2 + keyLength + 16);
 
-      // 4. Desencriptar el archivo con AES
+      // 4. Desxifra el contingut de l'arxiu amb AES usant la clau i l'IV recuperats
       final aesEncrypter = Encrypter(AES(aesKey));
       final decryptedFile = aesEncrypter.decryptBytes(
         Encrypted(encryptedFileContent),
         iv: iv,
       );
 
-      // 5. Guardar el archivo desencriptado
+      // 5. Guarda l'arxiu desxifrat a la ruta de destinació
       await File(destinationPath).writeAsBytes(decryptedFile);
     } catch (e) {
       throw 'Error desencriptant l\'arxiu: $e';

@@ -10,8 +10,10 @@ class ItemDetailContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mainImage = '$baseUrl/images/${item.image}';
-    final apiImage = '$baseUrl/item/${item.id}/image';
+    final mainImage =
+        '$baseUrl/images/${item.image}'; // url de la imatge principal
+    final apiImage =
+        '$baseUrl/item/${item.id}/image'; // url per si falla la imatge principal
     return SafeArea(
       child: Column(
         children: [

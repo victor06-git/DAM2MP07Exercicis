@@ -38,7 +38,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
     }
 
     try {
-      final uri = Uri.parse('$baseUrl/items');
+      final uri = Uri.parse('$baseUrl/items'); // url per obtenir els items
       final resp = await http.post(uri,
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'categoryId': categoryId}));

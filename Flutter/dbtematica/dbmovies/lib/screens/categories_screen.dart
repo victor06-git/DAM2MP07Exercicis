@@ -8,6 +8,7 @@ import '../config.dart';
 import '../models/category.dart';
 import '../models/item.dart';
 import '../view_item.dart';
+import '../categories_list_item.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -17,20 +18,25 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class CategoriesScreenState extends State<CategoriesScreen> {
-  List<Category> _categories = [];
-  bool _loading = true;
-  // Search state
-  bool _isSearching = false;
-  String _searchQuery = '';
-  List<Item> _searchResults = [];
-  bool _searchLoading = false;
+  List<Category> _categories = []; // llista de categories carregades del servidor
+  bool _loading = true;            // indica si s'estan carregant les categories
 
+  // Estat de la cerca
+  bool _isSearching = false;       // true quan s'ha llançat una cerca
+  String _searchQuery = '';        // text actual del camp de cerca
+  List<Item> _searchResults = [];  // resultats retornats pel servidor
+  bool _searchLoading = false;     // true mentre s'espera resposta del servidor
+
+  // didChangeDependencies es crida just després d'initState i quan canvien
+  // dependències heretades (com ModalRoute). És el lloc correcte per fer
+  // la primera càrrega de dades perquè el context ja està disponible.
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _fetchCategories();
   }
 
+  // Fa un POST a /categories i carrega la llista de categories
   Future<void> _fetchCategories() async {
     try {
       final uri = Uri.parse('$baseUrl/categories');
@@ -39,6 +45,7 @@ class CategoriesScreenState extends State<CategoriesScreen> {
       if (resp.statusCode == 200) {
         final List<dynamic> data = jsonDecode(resp.body);
         setState(() {
+          // Converteix cada element JSON en un objecte Category
           _categories = data.map((e) => Category.fromJson(e)).toList();
           _loading = false;
         });
@@ -50,21 +57,23 @@ class CategoriesScreenState extends State<CategoriesScreen> {
     }
   }
 
+  // Fa un POST a /search amb el text de cerca i actualitza _searchResults
   Future<void> _performSearch(String query) async {
     setState(() {
-      _isSearching = true;
-      _searchLoading = true;
-      _searchResults = [];
+      _isSearching = true;   // activa el mode cerca per mostrar resultats
+      _searchLoading = true; // mostra el spinner mentre espera
+      _searchResults = [];   // neteja resultats anteriors
     });
     try {
       final uri = Uri.parse('$baseUrl/search');
       final resp = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'query': query}),
+        body: jsonEncode({'query': query}), // envia el text com a JSON
       );
       if (resp.statusCode == 200) {
         final Map<String, dynamic> decoded = jsonDecode(resp.body);
+        // Extreu la llista d'items del camp 'items' de la resposta
         final List<Item> results = (decoded['items'] as List<dynamic>?)
                 ?.map((e) => Item.fromJson(e))
                 .toList() ??
@@ -82,16 +91,21 @@ class CategoriesScreenState extends State<CategoriesScreen> {
         _searchResults = [];
       });
     } finally {
+      // S'executa sempre, tant si hi ha error com si no
       setState(() {
         _searchLoading = false;
       });
     }
   }
 
+  // Construeix la llista de resultats de cerca
   Widget _buildSearchResults() {
+    // Mentre carrega mostra un spinner
     if (_searchLoading) return const Center(child: CircularProgressIndicator());
+    // Si no hi ha resultats mostra un missatge
     if (_searchResults.isEmpty)
       return const Center(child: Text('No s\'han trobat resultats'));
+    // Llista de resultats amb imatge, nom i descripció
     return ListView.builder(
       itemCount: _searchResults.length,
       itemBuilder: (context, index) {
@@ -114,6 +128,7 @@ class CategoriesScreenState extends State<CategoriesScreen> {
               errorWidget: (context, url, error) => const Icon(Icons.movie),
             ),
           ),
+          // Al prémer navega al detall de l'item
           onTap: () {
             Navigator.push(
               context,
@@ -135,19 +150,20 @@ class CategoriesScreenState extends State<CategoriesScreen> {
               padding: const EdgeInsets.all(12.0),
               child: Column(
                 children: [
-                  // Search bar
+                  // Barra de cerca: es mostra sempre a la part superior
                   TextField(
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.search),
                       hintText: 'Busca items o escriu i prem Enter...',
+                      // Botó X per netejar la cerca, només visible si hi ha text
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
                               icon: const Icon(Icons.clear),
                               onPressed: () {
                                 setState(() {
-                                  _searchQuery = '';
-                                  _isSearching = false;
-                                  _searchResults = [];
+                                  _searchQuery = '';    // neteja el text
+                                  _isSearching = false; // torna a mostrar categories
+                                  _searchResults = [];  // neteja resultats
                                 });
                               },
                             )
@@ -159,12 +175,16 @@ class CategoriesScreenState extends State<CategoriesScreen> {
                         borderSide: BorderSide.none,
                       ),
                     ),
+                    // S'executa amb cada tecla: actualitza _searchQuery per
+                    // controlar si mostrar o no el botó X
                     onChanged: (v) => setState(() => _searchQuery = v),
+                    // S'executa al prémer Enter
                     onSubmitted: (v) {
-                      final q = v.trim();
+                      final q = v.trim(); // elimina espais en blanc
                       if (q.isNotEmpty) {
-                        _performSearch(q);
+                        _performSearch(q); // llança la cerca al servidor
                       } else {
+                        // Si el camp és buit, torna a mostrar les categories
                         setState(() {
                           _isSearching = false;
                           _searchResults = [];
@@ -174,114 +194,17 @@ class CategoriesScreenState extends State<CategoriesScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // If searching show inline results
+                  // Si s'està cercant mostra els resultats, sinó les categories
                   if (_isSearching)
                     Expanded(child: _buildSearchResults())
                   else
-                    // Responsive categories area
+                    // Àrea de categories amb layout responsiu
                     Expanded(
                       child: LayoutBuilder(builder: (context, constraints) {
-                        final w = constraints.maxWidth;
-                        if (w > 1024) {
-                          final crossCount = (w / 250).floor().clamp(3, 6);
-                          return Row(
-                            children: [
-                              // Left quick list for navigation
-                              SizedBox(
-                                width: 260,
-                                child: ListView.builder(
-                                  itemCount: _categories.length,
-                                  itemBuilder: (ctx, i) {
-                                    final c = _categories[i];
-                                    return ListTile(
-                                      title: Text(c.name),
-                                      onTap: () => Navigator.pushNamed(
-                                        context,
-                                        '/items',
-                                        arguments: {'id': c.id, 'name': c.name},
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              Expanded(
-                                child: GridView.builder(
-                                  padding: const EdgeInsets.all(12),
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: crossCount,
-                                          childAspectRatio: 3 / 2,
-                                          crossAxisSpacing: 12,
-                                          mainAxisSpacing: 12),
-                                  itemCount: _categories.length,
-                                  itemBuilder: (context, index) {
-                                    final c = _categories[index];
-                                    final colors = [
-                                      Colors.indigo,
-                                      Colors.deepPurple,
-                                      Colors.teal,
-                                      Colors.orange,
-                                      Colors.pink
-                                    ];
-                                    final color = colors[c.id % colors.length];
-                                    return Card(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12)),
-                                      child: InkWell(
-                                        borderRadius: BorderRadius.circular(12),
-                                        onTap: () {
-                                          Navigator.pushNamed(
-                                            context,
-                                            '/items',
-                                            arguments: {
-                                              'id': c.id,
-                                              'name': c.name
-                                            },
-                                          );
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            gradient: LinearGradient(
-                                                colors: [
-                                                  color.shade700,
-                                                  color.shade300
-                                                ],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight),
-                                          ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(c.name,
-                                                  style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold)),
-                                              const Align(
-                                                alignment:
-                                                    Alignment.bottomRight,
-                                                child: Icon(Icons.chevron_right,
-                                                    color: Colors.white),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          );
-                        } else if (w > 600) {
+                        final w = constraints.maxWidth; // amplada de la pantalla
+                        if (w > 600) {
+                          // Tablet/Desktop: grid de targetes amb gradient
+                          // Calcula el nombre de columnes segons l'amplada (mínim 2, màxim 3)
                           final cross = (w / 300).floor().clamp(2, 3);
                           return GridView.builder(
                             padding: const EdgeInsets.all(12),
@@ -303,6 +226,7 @@ class CategoriesScreenState extends State<CategoriesScreen> {
                               ];
                               final color = colors[c.id % colors.length];
                               return Card(
+                                // Card de la categoria
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12)),
                                 child: InkWell(
@@ -350,28 +274,12 @@ class CategoriesScreenState extends State<CategoriesScreen> {
                             },
                           );
                         } else {
-                          // Mobile: simple list
+                          // Mòbil: llista simple usant el widget CategoryListItem
                           return ListView.builder(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             itemCount: _categories.length,
-                            itemBuilder: (ctx, i) {
-                              final c = _categories[i];
-                              return Card(
-                                margin: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                                child: ListTile(
-                                  title: Text(c.name),
-                                  trailing: const Icon(Icons.chevron_right),
-                                  onTap: () => Navigator.pushNamed(
-                                    context,
-                                    '/items',
-                                    arguments: {'id': c.id, 'name': c.name},
-                                  ),
-                                ),
-                              );
-                            },
+                            itemBuilder: (ctx, i) =>
+                                CategoryListItem(category: _categories[i]),
                           );
                         }
                       }),
